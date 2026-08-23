@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  html, body { margin: 0; padding: 0; background: #090b0d; }
+  a { color: #c9d0d8; text-underline-offset: 3px; }
+  a:hover { color: #e8eef4; }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #090b0d; color: #c9d0d8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px 20px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; box-sizing: border-box">
+
+  <sc-if value="{{ notHome }}" hint-placeholder-val="{{ false }}">
+    <button type="button" onClick="{{ goHome }}" style="position: fixed; top: 18px; left: 20px; margin: 0; z-index: 2; border: 0; background: none; color: #8b939c; font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px">home</button>
+  </sc-if>
+
+  <button type="button" onClick="{{ onBlop }}" aria-label="{{ aria }}" style="width: min(380px, 86vw); height: auto; padding: 0; border: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center">
+    <span ref="{{ rideRef }}" style="width: 100%; will-change: transform">
+      <canvas ref="{{ blopRef }}" width="380" height="380" role="img" aria-label="Blop" style="width: min(380px, 86vw); height: min(380px, 86vw); display: block; cursor: pointer"></canvas>
+    </span>
+  </button>
+
+  <sc-if value="{{ isBoard }}" hint-placeholder-val="{{ false }}">
+    <div style="width: min(22rem, 86vw); display: flex; flex-direction: column; gap: 10px">
+      <p style="margin: 0; text-align: center; font-size: 34px; font-weight: 500; letter-spacing: -0.03em; color: #e8eef4">{{ score }}</p>
+      <sc-for list="{{ bars }}" as="bar" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: 7.2rem 1fr 2rem; gap: 10px; align-items: center; font-size: 13px; letter-spacing: 0.04em; color: #7b838e">
+          <span>{{ bar.name }}</span>
+          <span style="display: block; height: 3px; background: #1b2026">
+            <i style="display: block; height: 100%; background: #c5ced8; width: {{ bar.width }}"></i>
+          </span>
+          <span>{{ bar.value }}</span>
+        </div>
+      </sc-for>
+      <p style="margin: 0; max-width: 28rem; text-align: center; font-size: 22px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.35; color: #e8eef4; text-wrap: pretty">{{ boardCopy }}</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isRec }}" hint-placeholder-val="{{ false }}">
+    <div role="button" tabindex="0" aria-label="Double tap for another prompt" onPointerDown="{{ onSkipPointer }}" style="display: flex; flex-direction: column; align-items: center; max-width: 28rem; cursor: pointer; user-select: none; -webkit-user-select: none">
+      <span style="display: block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.55; margin-bottom: 6px">{{ toneCue }}</span>
+      <span ref="{{ capRef }}" style="margin: 0; max-width: 28rem; text-align: center; font-size: 22px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.35; color: #e8eef4; text-wrap: pretty">{{ caption }}</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isPlain }}" hint-placeholder-val="{{ true }}">
+    <span ref="{{ capRef }}" style="margin: 0; max-width: 28rem; text-align: center; font-size: 22px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.35; color: #e8eef4; text-wrap: pretty">{{ caption }}</span>
+  </sc-if>
+
+  <sc-if value="{{ hasSub }}" hint-placeholder-val="{{ false }}">
+    <p style="margin: 0; font-size: 13px; letter-spacing: 0.04em; color: #7b838e">{{ sub }}</p>
+  </sc-if>
+
+  <sc-if value="{{ isErr }}" hint-placeholder-val="{{ false }}">
+    <button type="button" onClick="{{ enterSimulate }}" style="margin-top: 8px; border: 0; background: none; color: #8b939c; font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px">Continue without a microphone</button>
+  </sc-if>
+
+  <a href="CV.dc.html" style="position: fixed; bottom: 18px; right: 20px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #5c636c; text-decoration: none" style-hover="color: #e8eef4">cv</a>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;takeSeconds&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:20,&quot;min&quot;:5,&quot;max&quot;:60,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  get DUR() { return this.props.takeSeconds ?? 20; }
+  PROMPTS = [
+    { t: "Explain meditation techniques for a beginner.", e: "calm" },
+    { t: "Describe a peaceful morning routine.", e: "calm" },
+    { t: "Rally a team before a big challenge.", e: "excited" },
+    { t: "Pitch a revolutionary app idea to investors.", e: "authoritative" },
+    { t: "Tell a story about an unexpected adventure.", e: "excited" },
+    { t: "Make the case for lifelong learning.", e: "authoritative" },
+  ];
+
+  state = {
+    view: "home",
+    prompt: { t: "Explain meditation techniques for a beginner.", e: "calm" },
+    recording: false,
+    left: 20,
+    results: null,
+    simulated: false,
+    errorCopy: "No sound came through",
+    intro: true,
+    ready: false,
+  };
+
+  /* live values the shader reads every frame — kept off React state on purpose */
+  voice = 0;
+  tone = 0.4;
+  recRef = false;
+  arming = false;
+  stopping = false;
+  discard = false;
+  gen = 0;
+  reqId = 0;
+  t0 = 0;
+  raf = 0;
+  lastTap = 0;
+  lastSkip = 0;
+  SKIP_MS = 420;
+  simulate = false;
+  mods = null;
+  handle = null;
+
+  pick() { return this.PROMPTS[Math.floor(Math.random() * this.PROMPTS.length)]; }
+
+  async componentDidMount() {
+    const [line, grade, map, pose] = await Promise.all([
+      import("./blop/line.js"),
+      import("./blop/grade.js"),
+      import("./blop/map.js"),
+      import("./blop/pose.js"),
+    ]);
+    this.mods = { line, grade, map, pose };
+    let intro = true;
+    try { intro = !window.localStorage.getItem("blop-met"); } catch {}
+    this.setState({ ready: true, prompt: this.pick(), intro });
+    if (intro) {
+      this.introTimer = setTimeout(() => {
+        try { window.localStorage.setItem("blop-met", "1"); } catch {}
+        this.setState({ intro: false });
+      }, 2400);
+    }
+    if (this.blop) {
+      const { mountBlop } = await import("./blop/mount.js");
+      this.handle = mountBlop(this.blop, () => {
+        const s = this.state;
+        const board = s.view === "good" || s.view === "unsure";
+        const drive = board && this.mods ? this.mods.map.fromAnalyzer(s.results, s.prompt.e) : null;
+        return {
+          mood: drive ? drive.mood : this.mods ? this.mods.pose.mascotMood(s.view, s.results, s.recording) : "idle",
+          voice: this.voice,
+          tone: this.tone,
+          recording: s.recording,
+          band: drive ? drive.band : this.mods ? this.mods.grade.scoreBand(s.view, s.results) : null,
+          target: s.prompt.e,
+          baseLine: this.caption(),
+          allowAsides: s.view === "home",
+          ride: this.ride,
+          cap: this.cap,
+          page: [0.035, 0.04, 0.048],
+        };
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.introTimer);
+    if (this.handle) this.handle.stop();
+    this.stopHardware();
+  }
+
+  caption() {
+    const s = this.state;
+    if (!this.mods) return "tap me.";
+    return this.mods.line.baseLine({
+      view: s.view, recording: s.recording, intro: s.intro,
+      prompt: s.prompt, results: s.results, errorCopy: s.errorCopy,
+    });
+  }
+
+  go(view) { this.setState({ view }); }
+
+  markMet() {
+    try { window.localStorage.setItem("blop-met", "1"); } catch {}
+    this.setState({ intro: false });
+  }
+
+  stopHardware() {
+    this.recRef = false;
+    if (this.raf) cancelAnimationFrame(this.raf);
+    if (this.stream) { this.stream.getTracks().forEach((t) => t.stop()); this.stream = null; }
+    if (this.actx) { this.actx.close().catch(() => undefined); this.actx = null; this.an = null; }
+    this.voice = 0;
+  }
+
+  resetRec() {
+    this.discard = true;
+    this.arming = false;
+    this.stopHardware();
+    const rec = this.recorder;
+    if (rec && rec.state !== "inactive") { try { rec.stop(); } catch {} }
+    this.recorder = null;
+    this.chunks = [];
+    this.setState({ recording: false, left: this.DUR });
+  }
+
+  pickMime() {
+    const types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+    for (const t of types) if (window.MediaRecorder?.isTypeSupported?.(t)) return t;
+    return "";
+  }
+
+  loop() {
+    if (!this.recRef) return;
+    const el = (performance.now() - this.t0) / 1000;
+    const remain = Math.max(0, this.DUR - el);
+    if (Math.abs(remain - this.state.left) > 0.2) this.setState({ left: remain });
+    if (this.an && this.buf) {
+      this.an.getByteTimeDomainData(this.buf);
+      let sum = 0;
+      for (let i = 0; i < this.buf.length; i += 1) { const d = (this.buf[i] - 128) / 128; sum += d * d; }
+      this.voice = Math.min(1, Math.sqrt(sum / this.buf.length) * 4);
+      if (this.freq) {
+        this.an.getByteFrequencyData(this.freq);
+        let lo = 0, hi = 0;
+        const mid = Math.floor(this.freq.length / 2);
+        for (let i = 0; i < mid; i += 1) lo += this.freq[i];
+        for (let i = mid; i < this.freq.length; i += 1) hi += this.freq[i];
+        this.tone = hi / (lo + hi + 1);
+      }
+    } else if (this.mods) {
+      const target = this.state.prompt.e || "calm";
+      this.voice = this.mods.grade.simulatedVoice(el, target);
+      this.tone = this.mods.grade.simulatedTone(el, target);
+    }
+    if (remain <= 0) { this.stopRecording(); return; }
+    this.raf = requestAnimationFrame(() => this.loop());
+  }
+
+  async startRecording() {
+    if (this.recRef || this.arming || this.stopping) return;
+    const gen = ++this.gen;
+    this.arming = true;
+    this.chunks = [];
+    this.discard = false;
+    if (!this.simulate) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        if (gen !== this.gen) { stream.getTracks().forEach((t) => t.stop()); this.arming = false; return; }
+        this.stream = stream;
+        const mime = this.pickMime();
+        const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+        this.recorder = rec;
+        rec.ondataavailable = (e) => { if (e.data && e.data.size > 0) this.chunks.push(e.data); };
+        rec.onstop = () => {
+          if (this.discard) { this.discard = false; this.stopHardware(); return; }
+          this.finishClip(new Blob(this.chunks, { type: rec.mimeType || mime || "audio/webm" }));
+        };
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.actx = new AC();
+        this.an = this.actx.createAnalyser();
+        this.an.fftSize = 1024;
+        this.buf = new Uint8Array(this.an.frequencyBinCount);
+        this.freq = new Uint8Array(this.an.frequencyBinCount);
+        this.actx.createMediaStreamSource(stream).connect(this.an);
+        rec.start(250);
+      } catch {
+        this.arming = false;
+        this.stopHardware();
+        this.setState({ errorCopy: "The microphone is blocked." });
+        this.go("err");
+        return;
+      }
+    }
+    if (gen !== this.gen) { this.arming = false; return; }
+    this.recRef = true;
+    this.arming = false;
+    this.t0 = performance.now();
+    this.setState({ recording: true, left: this.DUR });
+    this.raf = requestAnimationFrame(() => this.loop());
+  }
+
+  stopRecording() {
+    this.recRef = false;
+    this.setState({ recording: false });
+    if (this.raf) cancelAnimationFrame(this.raf);
+    const rec = this.recorder;
+    if (!rec || rec.state === "inactive") { this.stopHardware(); this.finishClip(null); return; }
+    try { rec.requestData(); } catch {}
+    setTimeout(() => { try { if (rec.state !== "inactive") rec.stop(); } catch {} }, 80);
+  }
+
+  showResult(data, simulated) {
+    const drive = this.mods.map.fromAnalyzer(data, this.state.prompt.e);
+    this.setState({ results: data, simulated });
+    this.stopping = false;
+    this.go(drive.mixed ? "unsure" : "good");
+  }
+
+  async finishClip(blob) {
+    const target = this.state.prompt.e;
+    if (this.simulate) {
+      const reqId = ++this.reqId;
+      this.go("load");
+      setTimeout(() => {
+        if (reqId !== this.reqId) return;
+        this.showResult(this.mods.line.simulateResult(target), true);
+      }, 1100);
+      return;
+    }
+    if (!blob || blob.size < 1500) {
+      this.setState({ errorCopy: "That take was too short." });
+      this.stopping = false;
+      this.go("err");
+      return;
+    }
+    const reqId = ++this.reqId;
+    this.go("load");
+    const form = new FormData();
+    form.append("file", blob, blob.type?.includes("mp4") ? "take.mp4" : "take.webm");
+    form.append("target", target);
+    form.append("targetEmotion", target);
+    try {
+      const api = await import("./blop/api.js");
+      const data = await api.postToAnalyzer("/api/analyze", form);
+      if (reqId !== this.reqId) return;
+      this.showResult(data, false);
+    } catch {
+      /* The Wav2Vec2 + GAT server is not reachable from this page: fall back to
+         the app's own simulated read so the flow still completes. */
+      if (reqId !== this.reqId) return;
+      this.showResult(this.mods.line.simulateResult(target), true);
+    }
+  }
+
+  rollPrompt() {
+    let next = this.pick();
+    for (let i = 0; i < 8 && next.t === this.state.prompt.t; i += 1) next = this.pick();
+    this.setState({ prompt: next });
+  }
+
+  skipFromRec() {
+    if (this.state.view !== "rec") return;
+    this.gen += 1;
+    this.lastTap = 0;
+    this.lastSkip = 0;
+    this.stopping = false;
+    this.resetRec();
+    this.rollPrompt();
+  }
+
+  enterSimulate() {
+    this.simulate = true;
+    this.gen += 1;
+    this.stopping = false;
+    this.lastTap = 0;
+    this.lastSkip = 0;
+    this.arming = false;
+    this.resetRec();
+    this.go("rec");
+    void this.startRecording();
+  }
+
+  onBlop() {
+    if (this.handle) this.handle.kick();
+    const view = this.state.view;
+    if (view === "home") { this.markMet(); this.go("rec"); return; }
+    if (view === "rec") {
+      if (this.stopping) return;
+      const now = performance.now();
+      const justStarted = this.recRef && now - this.t0 < this.SKIP_MS;
+      const secondTap = this.lastTap && now - this.lastTap < this.SKIP_MS;
+      if ((this.arming || justStarted) && secondTap) { this.lastTap = 0; this.skipFromRec(); return; }
+      if (this.recRef || this.state.recording) {
+        this.lastTap = 0;
+        this.stopping = true;
+        this.stopRecording();
+        return;
+      }
+      this.lastTap = now;
+      this.startRecording();
+      return;
+    }
+    if (view === "err") { this.enterSimulate(); return; }
+    this.reqId += 1;
+    this.stopping = false;
+    this.resetRec();
+    this.simulate = false;
+    this.setState({ results: null, simulated: false, prompt: this.pick() });
+    this.go("rec");
+  }
+
+  renderVals() {
+    const s = this.state;
+    const board = s.view === "good" || s.view === "unsure";
+    const drive = board && this.mods ? this.mods.map.fromAnalyzer(s.results, s.prompt.e) : null;
+    const caption = this.caption();
+    const bars = drive
+      ? drive.bars.map((b) => ({ name: b.name, value: Math.round(b.value * 100), width: Math.round(b.value * 100) + "%" }))
+      : [];
+    const sub = s.view === "rec"
+      ? (s.recording ? "0:" + String(Math.ceil(s.left)).padStart(2, "0") : "tap to record · double tap for another")
+      : board && s.simulated ? "analyzer offline · simulated read" : "";
+
+    return {
+      notHome: s.view !== "home",
+      isRec: s.view === "rec",
+      isBoard: board,
+      isPlain: !board && s.view !== "rec",
+      isErr: s.view === "err",
+      hasSub: sub !== "",
+      sub,
+      caption,
+      toneCue: this.mods ? this.mods.line.toneCue(s.prompt.e) : "",
+      score: drive ? drive.score : 0,
+      boardCopy: drive ? drive.copy : "",
+      bars,
+      aria: s.view === "home" ? "Start" : s.view === "rec" ? (s.recording ? "Stop recording" : "Start recording. Double tap for another prompt.") : "Try again",
+      onBlop: () => this.onBlop(),
+      goHome: () => {
+        this.reqId += 1;
+        this.gen += 1;
+        this.stopping = false;
+        this.resetRec();
+        this.simulate = false;
+        this.setState({ results: null, simulated: false });
+        this.go("home");
+      },
+      onSkipPointer: () => {
+        if (this.state.view !== "rec" || this.recRef || this.arming || this.state.recording) return;
+        const now = performance.now();
+        if (this.lastSkip && now - this.lastSkip < this.SKIP_MS) { this.lastSkip = 0; this.skipFromRec(); return; }
+        this.lastSkip = now;
+      },
+      enterSimulate: () => this.enterSimulate(),
+      rideRef: (el) => { this.ride = el; },
+      blopRef: (el) => { this.blop = el; },
+      capRef: (el) => { this.cap = el; },
+    };
+  }
+}
+</script>
+</body>
+</html>
