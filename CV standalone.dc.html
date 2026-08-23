@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script src="./standalone-bundle.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#000000">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#000000"/>
+    <g fill="none" stroke="#E6E2D8" stroke-opacity="0.28" stroke-width="3">
+      <ellipse cx="600" cy="430" rx="470" ry="250"/>
+      <ellipse cx="600" cy="430" rx="380" ry="196"/>
+      <ellipse cx="600" cy="430" rx="290" ry="145"/>
+      <ellipse cx="600" cy="430" rx="200" ry="96"/>
+      <ellipse cx="600" cy="430" rx="112" ry="50"/>
+    </g>
+    <path d="M300 190 L420 120 L360 250 L500 170 L470 300 L580 260 L560 380 L600 430" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="600" cy="430" r="17" fill="#E8A33D"/>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&display=swap">
+<style>
+  :root { --line: #E6E2D8; --run: #ffffff; --warm: #E8A33D; }
+  html, body { margin: 0; padding: 0; background: #000000; overflow-x: hidden; }
+  a { color: #E6E2D8; text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  :focus-visible { outline: 1px solid #E6E2D8; outline-offset: 4px; }
+  h1 svg { overflow: visible; }
+
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: transparent; color: #E6E2D8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 15px; font-weight: 400; line-height: 1.55; box-sizing: border-box; position: relative">
+
+  <svg ref="{{ topoRef }}" aria-hidden="true" style="position: absolute; top: 0; left: 0; width: 100%; z-index: 0; pointer-events: none"></svg>
+
+  <div style="position: fixed; top: 20px; right: 22px; display: flex; gap: 14px; z-index: 2">
+    <button type="button" onClick="{{ setEn }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: #E6E2D8; opacity: {{ enOn }}">en</button>
+    <button type="button" onClick="{{ setEs }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: #E6E2D8; opacity: {{ esOn }}">es</button>
+    <button type="button" onClick="{{ setDa }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: #E6E2D8; opacity: {{ daOn }}">da</button>
+  </div>
+
+  <main style="position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 28vh 20px 22vh">
+    <h1 ref="{{ nameRef }}" data-mutter="name" style="margin: 0 0 44px; padding: 0; font-size: 0; line-height: 0">
+      <span ref="{{ mathRef }}" aria-hidden="true" style="position: absolute; display: block; max-width: 100%; width: 330px; height: 96px; opacity: 0; pointer-events: none; z-index: 2"></span>
+    </h1>
+
+    <p style="margin: 0 0 10px; font-size: 15px; line-height: 1.5; max-width: 34rem; text-wrap: pretty">{{ lede }}</p>
+    <p style="margin: 0 0 96px; font-size: 13px; opacity: 0.55">{{ meta }}</p>
+
+    <article data-mutter="paper" style="margin: 0 0 64px">
+      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+        <a href="https://doi.org/10.3390/jimaging11020041">Pano-GAN: A Deep Generative Model for Panoramic Dental Radiographs</a>
+      </h3>
+      <p style="margin: 0; font-size: 13px; opacity: 0.55">Journal of Imaging, 2025. Equal author.</p>
+    </article>
+
+    <article data-mutter="thesis" style="margin: 0 0 64px">
+      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+        <a href="#" style="cursor: default">Development of an AI System for Improving Speaking Skills through Voice Modulation and Tone Practice</a>
+      </h3>
+      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.55">Bachelor thesis, Aarhus University, 2026.</p>
+      <p style="margin: 0; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ thesisCopy }}</p>
+    </article>
+
+    <article style="display: flex; align-items: center; gap: 20px; margin: 0 0 64px; flex-wrap: wrap">
+      <div style="position: relative; display: flex; flex-direction: column; align-items: center; pointer-events: none; flex-shrink: 0">
+        <span ref="{{ rideRef }}" style="display: block; line-height: 0; pointer-events: none">
+          <canvas ref="{{ blopRef }}" width="200" height="200" role="img" aria-label="Blop, idle" style="width: 200px; height: 200px; display: block; pointer-events: none"></canvas>
+        </span>
+        <a href="#" aria-label="Open VoiceMaster" style="pointer-events: auto; position: absolute; left: 50%; top: 46%; width: 120px; height: 90px; transform: translate(-50%, -50%); border: 0; padding: 0; margin: 0; background: transparent; cursor: pointer"></a>
+        <p style="position: absolute; left: 50%; top: calc(100% - 2px); transform: translateX(-50%); margin: 0; max-width: 16rem; text-align: center; font-size: 13px; line-height: 1.3; opacity: 0.55; white-space: nowrap; pointer-events: none">{{ mutter }}</p>
+      </div>
+      <div data-mutter="vm" style="min-width: 0; flex: 1">
+        <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+          <a href="#" style="cursor: default">VoiceMaster</a>
+        </h3>
+        <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.55">In progress. Local.</p>
+        <p style="margin: 0; font-size: 15px; text-wrap: pretty">{{ vmCopy }}</p>
+      </div>
+    </article>
+
+    <article data-mutter="rsna" style="margin: 0 0 96px">
+      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+        <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection">2026 RSNA Knee Abnormality Detection AI Challenge</a>
+      </h3>
+      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.55">Ongoing.</p>
+      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ rsnaCopy }}</p>
+      <nav style="display: flex; gap: 16px; font-size: 13px; opacity: 0.55">
+        <a href="https://www.rsna.org/artificial-intelligence/ai-image-challenge/knee-mri-ai-challenge">RSNA</a>
+      </nav>
+    </article>
+
+    <div data-mutter="edu">
+      <h2 style="margin: 0 0 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.4">{{ eduLabel }}</h2>
+      <p style="margin: 0; font-size: 15px">BSc Data Science, Aarhus University, 2026</p>
+    </div>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  state = { lang: "en", mutter: "" };
+
+  COPY = {
+    en: {
+      lede: "Looking for a student assistant or internship in ML engineering, Aarhus commuting area.",
+      meta: "Odder, Denmark · Danish native · English C2 · Spanish basic",
+      thesis: "A Wav2Vec2 model that classifies short speech as calm, excited, or authoritative.",
+      vm: "The practice site from the thesis.",
+      rsna: "Multi-plane knee MRI, twelve findings, labels from multilingual reports.",
+      edu: "Education",
+    },
+    es: {
+      lede: "Busco studentermedhjælper o internship en ingeniería de ML, zona de Aarhus.",
+      meta: "Odder, Dinamarca · danés nativo · inglés C2 · español básico",
+      thesis: "Un modelo Wav2Vec2 que clasifica habla breve como calm, excited o authoritative.",
+      vm: "El sitio de práctica del thesis.",
+      rsna: "RM de rodilla en varios planos, doce hallazgos, etiquetas desde informes multilingües.",
+      edu: "Educación",
+    },
+    da: {
+      lede: "Søger studentermedhjælper eller internship i ML-engineering, pendlingsafstand Aarhus.",
+      meta: "Odder, Danmark · dansk indfødt · engelsk C2 · spansk på begynderniveau",
+      thesis: "En Wav2Vec2-model der klassificerer kort tale som calm, excited eller authoritative.",
+      vm: "Øvelsessitet fra specialet.",
+      rsna: "Knæ-MRI i flere planer, tolv fund, labels fra flersprogede beskrivelser.",
+      edu: "Uddannelse",
+    },
+  };
+
+  MUTTER = {
+    paper: [
+      "this one is all teeth and shadows.",
+      "a model that dreams in x-ray.",
+      "they had to invent the missing films.",
+      "equal author. he will mention that.",
+      "radiology, but the mouths are synthetic.",
+    ],
+    name: [
+      "it took 220 steps to write that.",
+      "it overshot twice before it landed.",
+      "the learning rate was almost too big.",
+      "he descended into his own name.",
+      "that is the minimum. we hope.",
+    ],
+    thesis: [
+      "he talked about this for months.",
+      "three tones. that was the whole fight.",
+      "this is why i exist.",
+      "calm, excited, authoritative. pick one.",
+      "a thesis that wanted a face.",
+    ],
+    vm: [
+      "this is home.",
+      "i live here.",
+      "tap me and we can practice.",
+      "the thesis grew a body.",
+      "come in. it is quieter than it looks.",
+    ],
+    rsna: [
+      "so many knees in one place.",
+      "twelve findings, one joint.",
+      "knees from every angle.",
+      "the reports came in more than one language.",
+      "a whole challenge made of cartilage.",
+    ],
+    edu: [
+      "this is the long part.",
+      "data science, then this.",
+      "the name on the degree is data science.",
+      "the year on the degree is 2026.",
+      "school first. the rest is still loading.",
+    ],
+  };
+
+  row = "";
+  line = "";
+
+  pickLine(id, lastLine) {
+    const pool = this.MUTTER[id] || [];
+    if (!pool.length) return "";
+    const choices = pool.length > 1 ? pool.filter((l) => l !== lastLine) : pool;
+    return choices[Math.floor(Math.random() * choices.length)] || "";
+  }
+
+  async componentDidMount() {
+    const at = (e) => {
+      const x = e.clientX, y = e.clientY;
+      let id = "";
+      const tap = document.querySelector('[aria-label="Open VoiceMaster"]');
+      if (tap) {
+        const b = tap.getBoundingClientRect();
+        if (x >= b.left && x <= b.right && y >= b.top && y <= b.bottom) id = "vm";
+      }
+      if (!id) {
+        for (const row of document.querySelectorAll("[data-mutter]")) {
+          const r = row.getBoundingClientRect();
+          if (y >= r.top && y <= r.bottom && x >= r.left && x <= r.right) {
+            id = row.getAttribute("data-mutter") || "";
+          }
+        }
+      }
+      if (id === this.row) return;
+      this.row = id;
+      this.line = this.pickLine(id, this.line);
+      this.setState({ mutter: this.line });
+    };
+    const clear = () => { this.row = ""; this.line = ""; this.setState({ mutter: "" }); };
+    this.listeners = { at, clear };
+    window.addEventListener("pointermove", at);
+    document.documentElement.addEventListener("mouseleave", clear);
+    window.addEventListener("blur", clear);
+
+    if (this.topo && this.nameHost) {
+      const { mountScene } = window.__dcBundle;
+      this.scene = mountScene({ fieldSvg: this.topo, nameHost: this.nameHost, mathHost: this.mathHost });
+    }
+    if (this.mathHost) {
+      try {
+        const { mountMath3D } = window.__dcBundle;
+        this.math = await mountMath3D(this.mathHost, {
+          runs: [
+            { t: "\u03b8" }, { t: "1", scale: 0.62, dy: 0.12 },
+            { t: " = \u03b8" }, { t: "0", scale: 0.62, dy: 0.12 },
+            { t: " \u2212 \u03b7 \u2207L(\u03b8" }, { t: "0", scale: 0.62, dy: 0.12 }, { t: ")" },
+          ],
+        });
+      } catch (err) {
+        console.warn("3D math unavailable", err);
+      }
+    }
+    if (this.blop) {
+      const { mountBlop } = window.__dcBundle;
+      this.handle = mountBlop(this.blop, () => ({
+        mood: "idle",
+        voice: 0,
+        tone: 0.4,
+        recording: false,
+        band: null,
+        target: "calm",
+        allowAsides: false,
+        ride: this.ride,
+        page: [0, 0, 0],
+      }));
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.listeners) {
+      window.removeEventListener("pointermove", this.listeners.at);
+      document.documentElement.removeEventListener("mouseleave", this.listeners.clear);
+      window.removeEventListener("blur", this.listeners.clear);
+    }
+    if (this.handle) this.handle.stop();
+    if (this.scene) this.scene.destroy();
+    if (this.math) this.math.destroy();
+  }
+
+  renderVals() {
+    const copy = this.COPY[this.state.lang];
+    const on = (id) => (this.state.lang === id ? "1" : "0.4");
+    return {
+      lede: copy.lede,
+      meta: copy.meta,
+      thesisCopy: copy.thesis,
+      vmCopy: copy.vm,
+      rsnaCopy: copy.rsna,
+      eduLabel: copy.edu,
+      mutter: this.state.mutter,
+      enOn: on("en"),
+      esOn: on("es"),
+      daOn: on("da"),
+      setEn: () => this.setState({ lang: "en" }),
+      setEs: () => this.setState({ lang: "es" }),
+      setDa: () => this.setState({ lang: "da" }),
+      topoRef: (el) => { this.topo = el; },
+      nameRef: (el) => { this.nameHost = el; },
+      mathRef: (el) => { this.mathHost = el; },
+      rideRef: (el) => { this.ride = el; },
+      blopRef: (el) => { this.blop = el; },
+    };
+  }
+}
+</script>
+</body>
+</html>
