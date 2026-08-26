@@ -60,8 +60,9 @@
     </h1>
 
     <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }}</p>
-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; margin: 0 0 34px; font-size: 13px; opacity: 0.72">
-      <span>{{ meta }}</span>
+    <div style="margin: 0 0 34px; font-size: 13px; opacity: 0.72">
+      <p style="margin: 0 0 6px">{{ meta }}</p>
+      <p style="margin: 0 0 10px">{{ skills }}</p>
       <nav style="display: flex; flex-wrap: wrap; gap: 16px">
       <a href="mailto:mikkeltcp@hotmail.com">Email</a>
       <a href="https://github.com/MikkelTonatiuh">GitHub</a>
@@ -136,6 +137,7 @@ class Component extends DCLogic {
       themeLight: "Dark",
       intro: "Data science at Aarhus University. I like training deep learning models, whatever the domain. Outside that, fitness and health.",
       meta: "Odder, Denmark · Danish native · English C2 · Spanish basic",
+      skills: "Python, R, SQL, Java · PyTorch",
       thesis: "A Wav2Vec2 model that classifies short speech as calm, excited, or authoritative.",
       vm: "The practice site from the thesis.",
       rsna: "Multi-plane knee MRI, twelve findings, labels from multilingual reports.",
@@ -155,6 +157,7 @@ class Component extends DCLogic {
       themeLight: "Oscuro",
       intro: "Ciencia de datos en la Universidad de Aarhus. Me gusta entrenar modelos de deep learning, sea el dominio que sea. Fuera de eso, fitness y salud.",
       meta: "Odder, Dinamarca · danés nativo · inglés C2 · español básico",
+      skills: "Python, R, SQL, Java · PyTorch",
       thesis: "Un modelo Wav2Vec2 que clasifica habla breve como calm, excited o authoritative.",
       vm: "El sitio de práctica de la tesis.",
       rsna: "RM de rodilla en varios planos, doce hallazgos, etiquetas desde informes multilingües.",
@@ -174,6 +177,7 @@ class Component extends DCLogic {
       themeLight: "Mørk",
       intro: "Datavidenskab på Aarhus Universitet. Jeg kan godt lide at træne deep learning-modeller, uanset domænet. Udenfor det, fitness og sundhed.",
       meta: "Odder, Danmark · dansk indfødt · engelsk C2 · spansk på begynderniveau",
+      skills: "Python, R, SQL, Java · PyTorch",
       thesis: "En Wav2Vec2-model der klassificerer kort tale som calm, excited eller authoritative.",
       vm: "Træningssitet fra bachelorprojektet.",
       rsna: "Knæ-MRI i flere planer, tolv fund, labels fra flersprogede beskrivelser.",
@@ -340,6 +344,7 @@ class Component extends DCLogic {
         this.setState({ theme: next });
       },
       meta: copy.meta,
+      skills: copy.skills,
       thesisCopy: copy.thesis,
       vmCopy: copy.vm,
       rsnaCopy: copy.rsna,
