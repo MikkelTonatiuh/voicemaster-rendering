@@ -28,6 +28,9 @@
   a:hover { text-decoration: underline; text-underline-offset: 3px; }
   :focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; }
   h1 svg { overflow: visible; }
+  .dl { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--warm-text); border-radius: 999px; color: var(--warm-text); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; line-height: 1; transition: background-color 0.15s, color 0.15s; }
+  .dl:hover { background: var(--warm-text); color: var(--bg); text-decoration: none; }
+  .dl svg { width: 12px; height: 12px; flex: none; }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
 
@@ -117,6 +120,19 @@
       </nav>
     </article>
 
+    <article data-mutter="app" style="margin: 0 0 28px">
+      <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ projectLabel }}</p>
+      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+        <a href="https://mikkeltonatiuh.github.io/machine-program/">Machine Program</a>
+      </h3>
+      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">{{ appMeta }}</p>
+      <p style="margin: 0 0 14px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ appCopy }}</p>
+      <nav style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; font-size: 13px">
+        <a class="dl" href="https://mikkeltonatiuh.github.io/machine-program/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ appDownload }}</a>
+        <a href="https://github.com/MikkelTonatiuh/machine-program" style="opacity: 0.72">{{ appSource }}</a>
+      </nav>
+    </article>
+
     <div data-mutter="edu">
       <h2 style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ eduLabel }}</h2>
       <p style="margin: 0; font-size: 15px">BSc Data Science, Aarhus University, 2026</p>
@@ -149,6 +165,10 @@ class Component extends DCLogic {
       equalAuthor: "Equal author",
       vmMeta: "In progress",
       rsnaMeta: "Ongoing, 2026",
+      appMeta: "Installable web app, 2026",
+      appCopy: "A guided 7-day machine workout. A 3D figure shows every exercise with the working muscles lit.",
+      appDownload: "Download app",
+      appSource: "Source",
     },
     es: {
       lede: "Busco studentermedhjælper o internship en ingeniería de ML, zona de Aarhus.",
@@ -169,6 +189,10 @@ class Component extends DCLogic {
       equalAuthor: "Autoría compartida",
       vmMeta: "En curso",
       rsnaMeta: "En curso, 2026",
+      appMeta: "App web instalable, 2026",
+      appCopy: "Un entrenamiento guiado de 7 días con máquinas. Una figura 3D muestra cada ejercicio con los músculos que trabajan iluminados.",
+      appDownload: "Descargar app",
+      appSource: "Código",
     },
     da: {
       lede: "Søger studentermedhjælper eller internship i ML-engineering, pendlingsafstand Aarhus.",
@@ -189,6 +213,10 @@ class Component extends DCLogic {
       equalAuthor: "Delt forfatterskab",
       vmMeta: "I gang",
       rsnaMeta: "I gang, 2026",
+      appMeta: "Installerbar webapp, 2026",
+      appCopy: "Et guidet 7-dages maskinprogram. En 3D-figur viser hver øvelse med de arbejdende muskler lyst op.",
+      appDownload: "Download app",
+      appSource: "Kode",
     },
   };
 
@@ -227,6 +255,13 @@ class Component extends DCLogic {
       "knees from every angle.",
       "the reports came in more than one language.",
       "a whole challenge made of cartilage.",
+    ],
+    app: [
+      "the figure does the rep. he does the set.",
+      "seven days, machines only.",
+      "it counts the rest so he does not.",
+      "twenty-two exercises, all of them lit up.",
+      "no account. it remembers on the phone.",
     ],
     edu: [
       "this is the long part.",
@@ -356,6 +391,10 @@ class Component extends DCLogic {
       equalAuthor: copy.equalAuthor,
       vmMeta: copy.vmMeta,
       rsnaMeta: copy.rsnaMeta,
+      appMeta: copy.appMeta,
+      appCopy: copy.appCopy,
+      appDownload: copy.appDownload,
+      appSource: copy.appSource,
       mutter: this.state.mutter,
       enOn: on("en"),
       esOn: on("es"),
