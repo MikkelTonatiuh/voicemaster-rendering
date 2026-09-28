@@ -117,6 +117,19 @@
       </nav>
     </article>
 
+    <article data-mutter="mp" style="margin: 0 0 28px">
+      <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ projectLabel }}</p>
+      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+        <a href="https://mikkeltonatiuh.github.io/machine-program/">Machine Program</a>
+      </h3>
+      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">{{ mpMeta }}</p>
+      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ mpCopy }}</p>
+      <nav style="display: flex; gap: 16px; font-size: 13px; opacity: 0.72">
+        <a href="https://mikkeltonatiuh.github.io/machine-program/">{{ mpOpen }}</a>
+        <a href="https://github.com/MikkelTonatiuh/machine-program">{{ mpSource }}</a>
+      </nav>
+    </article>
+
     <div data-mutter="edu">
       <h2 style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ eduLabel }}</h2>
       <p style="margin: 0; font-size: 15px">BSc Data Science, Aarhus University, 2026</p>
@@ -149,6 +162,10 @@ class Component extends DCLogic {
       equalAuthor: "Equal author",
       vmMeta: "In progress",
       rsnaMeta: "Ongoing, 2026",
+      mp: "A guided workout player for a seven-day, machines-only program: a 3D figure shows each exercise, and sets, weights and time are logged as you go. Installable and offline.",
+      mpMeta: "Web app · JavaScript, three.js · 2026",
+      mpOpen: "Open the app",
+      mpSource: "Source",
     },
     es: {
       lede: "Busco studentermedhjælper o internship en ingeniería de ML, zona de Aarhus.",
@@ -169,6 +186,10 @@ class Component extends DCLogic {
       equalAuthor: "Autoría compartida",
       vmMeta: "En curso",
       rsnaMeta: "En curso, 2026",
+      mp: "Un reproductor de entrenamiento guiado para un programa de siete días solo con máquinas: una figura 3D muestra cada ejercicio y se registran series, pesos y tiempo sobre la marcha. Instalable y sin conexión.",
+      mpMeta: "Aplicación web · JavaScript, three.js · 2026",
+      mpOpen: "Abrir la app",
+      mpSource: "Código",
     },
     da: {
       lede: "Søger studentermedhjælper eller internship i ML-engineering, pendlingsafstand Aarhus.",
@@ -189,6 +210,10 @@ class Component extends DCLogic {
       equalAuthor: "Delt forfatterskab",
       vmMeta: "I gang",
       rsnaMeta: "I gang, 2026",
+      mp: "En guidet træningsafspiller til et program på syv dage med kun maskiner: en 3D-figur viser hver øvelse, og sæt, vægt og tid logges undervejs. Kan installeres og virker offline.",
+      mpMeta: "Webapp · JavaScript, three.js · 2026",
+      mpOpen: "Åbn appen",
+      mpSource: "Kildekode",
     },
   };
 
@@ -227,6 +252,13 @@ class Component extends DCLogic {
       "knees from every angle.",
       "the reports came in more than one language.",
       "a whole challenge made of cartilage.",
+    ],
+    mp: [
+      "fitness and health, as promised.",
+      "the guy in it never tires.",
+      "a gym that fits in a pocket.",
+      "he does the reps so you can count.",
+      "it times the sets. it does not judge.",
     ],
     edu: [
       "this is the long part.",
@@ -348,6 +380,10 @@ class Component extends DCLogic {
       thesisCopy: copy.thesis,
       vmCopy: copy.vm,
       rsnaCopy: copy.rsna,
+      mpCopy: copy.mp,
+      mpMeta: copy.mpMeta,
+      mpOpen: copy.mpOpen,
+      mpSource: copy.mpSource,
       eduLabel: copy.edu,
       pubLabel: copy.pubLabel,
       thesisLabel: copy.thesisLabel,
