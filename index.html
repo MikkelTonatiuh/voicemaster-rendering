@@ -28,10 +28,9 @@
   a:hover { text-decoration: underline; text-underline-offset: 3px; }
   :focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; }
   h1 svg { overflow: visible; }
-  .fit { text-decoration: underline dotted var(--warm-text); text-decoration-thickness: 1px; text-underline-offset: 4px; white-space: nowrap; }
-  .fit:hover { text-decoration: underline solid var(--warm-text); text-underline-offset: 4px; }
-  .fit svg { width: 0.7em; height: 0.7em; margin-left: 0.2em; color: var(--warm-text); vertical-align: -0.02em; }
-  .sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .dl { display: inline-flex; align-items: center; gap: 6px; margin-left: 0.5em; padding: 2px 11px 2px 9px; border: 1px solid var(--warm-text); border-radius: 999px; color: var(--warm-text); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; line-height: 16px; white-space: nowrap; vertical-align: 1px; transition: background-color 0.15s, color 0.15s; }
+  .dl:hover { background: var(--warm-text); color: var(--bg); text-decoration: none; }
+  .dl svg { width: 11px; height: 11px; flex: none; }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
 
@@ -63,7 +62,7 @@
       <span ref="{{ mathRef }}" aria-hidden="true" style="position: absolute; display: block; max-width: 100%; width: 330px; height: 96px; opacity: 0; pointer-events: none; z-index: 2"></span>
     </h1>
 
-    <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ introA }}<a class="fit" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ fitHint }}">{{ fitWord }}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr">{{ fitSr }}</span></a>{{ introB }}</p>
+    <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }}<a class="dl" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ dlHint }}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ dlLabel }}</a></p>
     <div style="margin: 0 0 34px; font-size: 13px; opacity: 0.72">
       <p style="margin: 0 0 6px">{{ meta }}</p>
       <p style="margin: 0 0 10px">{{ skills }}</p>
@@ -139,11 +138,9 @@ class Component extends DCLogic {
       openLabel: "Open to work",
       themeDark: "Light",
       themeLight: "Dark",
-      introA: "Data science at Aarhus University. I like training deep learning models, whatever the domain. Outside that, ",
-      fitWord: "fitness",
-      introB: " and health.",
-      fitHint: "Download my fitness routine",
-      fitSr: " (download my fitness routine)",
+      intro: "Data science at Aarhus University. I like training deep learning models, whatever the domain. Outside that, fitness and health.",
+      dlLabel: "Download my routine",
+      dlHint: "My 7-day machine workout, as an app",
       meta: "Odder, Denmark · Danish native · English C2 · Spanish basic",
       skills: "Python, R, SQL, Java · PyTorch",
       thesis: "A Wav2Vec2 model that classifies short speech as calm, excited, or authoritative.",
@@ -163,11 +160,9 @@ class Component extends DCLogic {
       openLabel: "Disponible para trabajar",
       themeDark: "Claro",
       themeLight: "Oscuro",
-      introA: "Ciencia de datos en la Universidad de Aarhus. Me gusta entrenar modelos de deep learning, sea el dominio que sea. Fuera de eso, ",
-      fitWord: "fitness",
-      introB: " y salud.",
-      fitHint: "Descarga mi rutina de fitness",
-      fitSr: " (descarga mi rutina de fitness)",
+      intro: "Ciencia de datos en la Universidad de Aarhus. Me gusta entrenar modelos de deep learning, sea el dominio que sea. Fuera de eso, fitness y salud.",
+      dlLabel: "Descargar mi rutina",
+      dlHint: "Mi rutina de 7 días con máquinas, como app",
       meta: "Odder, Dinamarca · danés nativo · inglés C2 · español básico",
       skills: "Python, R, SQL, Java · PyTorch",
       thesis: "Un modelo Wav2Vec2 que clasifica habla breve como calm, excited o authoritative.",
@@ -187,11 +182,9 @@ class Component extends DCLogic {
       openLabel: "Åben for arbejde",
       themeDark: "Lys",
       themeLight: "Mørk",
-      introA: "Datavidenskab på Aarhus Universitet. Jeg kan godt lide at træne deep learning-modeller, uanset domænet. Udenfor det, ",
-      fitWord: "fitness",
-      introB: " og sundhed.",
-      fitHint: "Download min træningsrutine",
-      fitSr: " (download min træningsrutine)",
+      intro: "Datavidenskab på Aarhus Universitet. Jeg kan godt lide at træne deep learning-modeller, uanset domænet. Udenfor det, fitness og sundhed.",
+      dlLabel: "Download min rutine",
+      dlHint: "Min 7-dages maskinrutine som app",
       meta: "Odder, Danmark · dansk indfødt · engelsk C2 · spansk på begynderniveau",
       skills: "Python, R, SQL, Java · PyTorch",
       thesis: "En Wav2Vec2-model der klassificerer kort tale som calm, excited eller authoritative.",
@@ -356,11 +349,9 @@ class Component extends DCLogic {
     const copy = this.COPY[this.state.lang];
     const on = (id) => (this.state.lang === id ? "1" : "0.4");
     return {
-      introA: copy.introA,
-      introB: copy.introB,
-      fitWord: copy.fitWord,
-      fitHint: copy.fitHint,
-      fitSr: copy.fitSr,
+      intro: copy.intro,
+      dlLabel: copy.dlLabel,
+      dlHint: copy.dlHint,
       openLabel: copy.openLabel,
       themeLabel: this.state.theme === "light" ? copy.themeLight : copy.themeDark,
       themeAria: this.state.theme === "light" ? "Switch to dark mode" : "Switch to light mode",
