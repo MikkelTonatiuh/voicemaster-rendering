@@ -99,15 +99,34 @@ button, select, input { font: inherit; color: inherit; }
 .btn:disabled { opacity: 0.35; cursor: default; }
 .btn[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
 
-.split { display: grid; grid-template-columns: minmax(440px, 50fr) minmax(0, 50fr); grid-template-rows: minmax(0, 1fr); min-height: 0; }
-.stage { min-width: 0; min-height: 0; overflow: auto; background: var(--panel); padding: 18px 26px 48px; border-right: 1px solid var(--line); }
+/* the two sides share the width at --split; the handle between them drags it */
+.split { display: grid; grid-template-columns: calc((100% - 10px) * var(--split, 0.5)) 10px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); min-height: 0; }
+.stage { min-width: 0; min-height: 0; overflow: auto; background: var(--panel); padding: 18px 26px 48px; }
+.splitter { position: relative; background: var(--line); cursor: col-resize; touch-action: none; }
+.splitter::after { content: ""; position: absolute; top: 50%; left: 50%; width: 4px; height: 44px; border-radius: 2px; background: var(--axis); transform: translate(-50%, -50%); }
+.splitter:hover, .splitter:focus-visible, .resizing .splitter { background: var(--axis); }
+.splitter:hover::after, .resizing .splitter::after { background: var(--ink-2); }
+.resizing, .resizing * { cursor: col-resize !important; user-select: none !important; }
 .reader { position: relative; min-width: 0; min-height: 0; background: var(--bg); }
 .pane { position: relative; height: 100%; overflow: auto; padding: 20px 20px 70vh 52px; scroll-behavior: auto; }
-.readline { position: absolute; left: 10px; top: 30%; z-index: 3; width: 0; height: 0; border-left: 10px solid var(--ink-2); border-top: 7px solid transparent; border-bottom: 7px solid transparent; transform: translateY(-50%); pointer-events: none; }
-.page { position: relative; max-width: 780px; margin: 0 auto 16px; aspect-ratio: 953 / 1348; background: #ffffff; box-shadow: var(--shadow); border-radius: 2px; }
+.readline { position: absolute; left: 10px; top: 30%; z-index: 5; width: 0; height: 0; border-left: 10px solid var(--ink-2); border-top: 7px solid transparent; border-bottom: 7px solid transparent; transform: translateY(-50%); pointer-events: none; }
+/* a page is the PDF drawn by PDF.js (canvas, selectable text, links) over a picture that shows while it loads */
+.page { position: relative; width: var(--page-w, min(780px, 100%)); margin: 0 auto 16px; aspect-ratio: 595 / 842; background: #ffffff; box-shadow: var(--shadow); border-radius: 2px; }
 .page img { display: block; width: 100%; height: 100%; filter: var(--page-filter); border-radius: 2px; }
+.page canvas.pdf { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; filter: var(--page-filter); border-radius: 2px; }
+.page .textLayer { position: absolute; inset: 0; z-index: 2; overflow: clip; opacity: 1; line-height: 1; text-align: initial; text-size-adjust: none; -webkit-text-size-adjust: none; forced-color-adjust: none; transform-origin: 0 0; caret-color: CanvasText; }
+.page .textLayer :is(span, br) { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0% 0%; }
+.page .textLayer span.markedContent { top: 0; height: 0; }
+.page .textLayer ::selection { background: rgb(0 110 255 / 0.28); }
+.page .textLayer br::selection { background: transparent; }
+.page .textLayer .endOfContent { display: block; position: absolute; inset: 100% 0 0; z-index: 0; cursor: default; user-select: none; }
+.page .links { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.page .links a { position: absolute; pointer-events: auto; border-radius: 2px; }
+.page .links a:hover { background: rgb(255 200 0 / 0.22); }
 .pno { position: absolute; right: 100%; top: 2px; margin-right: 12px; font: 11px var(--mono); color: var(--muted); }
-.mark { position: absolute; left: -33px; width: 15px; height: 15px; padding: 0; transform: translateY(-50%) rotate(45deg); border: 1.5px solid var(--ink-2); background: var(--bg); border-radius: 2px; cursor: pointer; }
+.mark { position: absolute; z-index: 4; left: -33px; width: 15px; height: 15px; padding: 0; transform: translateY(-50%) rotate(45deg); border: 1.5px solid var(--ink-2); background: var(--bg); border-radius: 2px; cursor: pointer; }
+.zoom { display: inline-flex; align-items: center; gap: 4px; }
+.zoom .btn { height: 32px; min-width: 32px; padding: 0 8px; font-variant-numeric: tabular-nums; }
 .mark:hover { border-color: var(--ink); background: var(--panel-2); }
 .mark.on { background: var(--ink); border-color: var(--ink); }
 .solo-nav { display: none; }
@@ -240,7 +259,7 @@ a.btn { text-decoration: none; }
   .brand-sub { display: none; }
   .brand { flex: 1 1 0; min-width: 0; }
   .brand-name { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #hold, .pageind { display: none; }
+  #hold, .pageind, .zoom, .splitter { display: none; }
   .nav-sel { order: 3; flex: 1 1 100%; }
   .nav-sel select { max-width: 100%; width: 100%; }
   .split { display: block; }
@@ -275,13 +294,19 @@ a.btn { text-decoration: none; }
       <span class="brand-sub">Mikkel T. Chávez Petersen · BSc thesis, Aarhus University, 2026</span>
     </div>
     <label class="nav-sel"><span class="sr">Section</span><select id="sel"></select></label>
-    <span class="pageind" id="pageind">p. 2</span>
+    <span class="pageind" id="pageind">p. 1</span>
+    <div class="zoom" role="group" aria-label="Thesis zoom">
+      <button id="zoom-out" type="button" class="btn ghost" aria-label="Zoom out" title="Zoom out (or Ctrl + scroll)">−</button>
+      <button id="zoom-fit" type="button" class="btn ghost" title="Fit the page width">100%</button>
+      <button id="zoom-in" type="button" class="btn ghost" aria-label="Zoom in" title="Zoom in (or Ctrl + scroll)">+</button>
+    </div>
     <button id="hold" type="button" class="btn ghost" aria-pressed="false">Hold demo</button>
     <a class="btn ghost" href="../cv/thesis.pdf" title="The thesis as a PDF">PDF</a>
     <button id="help" type="button" class="btn ghost icon" aria-label="How to use this page" title="How to use this page">?</button>
   </header>
   <main class="split">
     <section class="stage" id="stage" aria-label="Live figure for the passage you are reading"></section>
+    <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" aria-label="Drag to resize the figure and the thesis" title="Drag to resize · double-click to reset" tabindex="0"></div>
     <section class="reader" aria-label="Thesis pages">
       <div class="readline" aria-hidden="true"></div>
       <nav class="solo-nav" id="solonav" aria-label="Thesis page">

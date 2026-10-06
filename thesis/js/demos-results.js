@@ -16,7 +16,7 @@
 
   /* ======================= overview panel ======================= */
   K.demo({
-    id: 'overview', sec: '', title: 'Start here', page: 2, y: 0.02, also: [[25, 0.477]],
+    id: 'overview', sec: '', title: 'Start here', page: 1, y: 0.02, also: [[25, 0.477]],
     build(api) {
       const steps = [
         ['Audio and labels', [['sampling', '3.1 Sampling'], ['labels', '3.2 Emotions → styles'], ['weights', '3.3 Class weights']]],
