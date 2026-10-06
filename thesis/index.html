@@ -108,7 +108,7 @@ button, select, input { font: inherit; color: inherit; }
 .splitter:hover::after, .resizing .splitter::after { background: var(--ink-2); }
 .resizing, .resizing * { cursor: col-resize !important; user-select: none !important; }
 .reader { position: relative; min-width: 0; min-height: 0; background: var(--bg); }
-.pane { position: relative; height: 100%; overflow: auto; padding: 20px 20px 70vh 52px; scroll-behavior: auto; }
+.pane { position: relative; height: 100%; overflow: auto; overflow-anchor: none; padding: 20px 20px 70vh 52px; scroll-behavior: auto; }
 .readline { position: absolute; left: 10px; top: 30%; z-index: 5; width: 0; height: 0; border-left: 10px solid var(--ink-2); border-top: 7px solid transparent; border-bottom: 7px solid transparent; transform: translateY(-50%); pointer-events: none; }
 /* a page is the PDF drawn by PDF.js (canvas, selectable text, links) over a picture that shows while it loads */
 .page { position: relative; width: var(--page-w, min(780px, 100%)); margin: 0 auto 16px; aspect-ratio: 595 / 842; background: #ffffff; box-shadow: var(--shadow); border-radius: 2px; }

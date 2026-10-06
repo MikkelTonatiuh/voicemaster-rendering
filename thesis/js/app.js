@@ -52,14 +52,11 @@
     document.getElementById('solo-prev').addEventListener('click', () => showSoloPage(soloPage - 1));
     document.getElementById('solo-next').addEventListener('click', () => showSoloPage(soloPage + 1));
 
-    pane.addEventListener('scroll', () => { if (!raf) raf = setTimeout(syncFromScroll, 60); }, { passive: true });
+    pane.addEventListener('scroll', () => { notePlace(); if (!raf) raf = setTimeout(syncFromScroll, 60); }, { passive: true });
     pane.addEventListener('scrollend', () => { quietUntil = 0; });
 
-    let rt = 0;
-    const ro = new ResizeObserver(() => {
-      cancelAnimationFrame(rt);
-      rt = requestAnimationFrame(() => { keepPlace(fitPages); resizeFns.forEach((f) => safe(f)); });
-    });
+    /* runs right after layout, before the frame is painted, so the page never visibly jumps */
+    const ro = new ResizeObserver(() => { keepPlace(fitPages); resizeFns.forEach((f) => safe(f)); });
     ro.observe(stage);
     ro.observe(pane);
 
@@ -91,12 +88,20 @@
     if (el && el.clientWidth) pane.style.setProperty('--scale-factor', (el.clientWidth / PAGE_PT).toFixed(5));
     schedulePdf();
   }
+  /* where the reading line sits (page and fraction of it), noted after every scroll. A window resize has
+     already moved things by the time it is reported, so the place is taken from before it */
+  let place = null;
+  function notePlace() {
+    if (solo || !pane.clientHeight) return;
+    const line = pane.scrollTop + pane.clientHeight * READ;
+    const p = pageAt(line), el = pageEls[p];
+    place = { p, frac: (line - el.offsetTop) / el.offsetHeight };
+  }
   /* change the page size without losing the line being read */
   function keepPlace(fn) {
     if (solo || !pane.clientHeight) { fn(); computeAnchors(); return; }
-    const line = pane.scrollTop + pane.clientHeight * READ;
-    const p = pageAt(line), el = pageEls[p];
-    const frac = (line - el.offsetTop) / el.offsetHeight;
+    if (!place) notePlace();
+    const { p, frac } = place, el = pageEls[p];
     const xMid = pane.scrollWidth > pane.clientWidth ? (pane.scrollLeft + pane.clientWidth / 2) / pane.scrollWidth : 0.5;
     fn();
     pane.scrollTop = el.offsetTop + frac * el.offsetHeight - pane.clientHeight * READ;
@@ -340,6 +345,7 @@
     quietUntil = Date.now() + 1200;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     pane.scrollTo({ top: Math.max(0, target), behavior: instant || reduce ? 'auto' : 'smooth' });
+    if (instant || reduce) notePlace();
   }
 
   function setSolo() {
