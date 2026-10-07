@@ -1,4 +1,4 @@
-import { floorAt, rasterName, buildField, contours, ringsAround, nameTrack, descend, pieces, pathData, bounds, svgEl, peakIn, makeTrainer, penFilter, NAME } from "./field.js";
+import { floorAt, rasterName, buildField, contours, ringsAround, nameTrack, descend, pieces, pathData, bounds, svgEl, peakIn, NAME } from "./field.js";
 
 /* Field and trail are two views of one surface, both in LAYOUT pixels: the
    background SVG draws the contours, the h1's SVG draws the run that descends
@@ -20,8 +20,6 @@ export function mountScene({ fieldSvg, nameHost, mathHost, fontPx = 50, replayMs
   let timer = 0, resizeTimer = 0;
   let parts = [], dots = [], notes = [], rings = [], leader = null, bloom = null, totalLen = 0, slowLen = 0;
   let sheen = null, sheenRaf = 0, markStride = 1;
-  let trainer = null, fieldRef = null, writeStart = 0, penStart = [0, 0], penFlags = null;
-  let trainTick = 0, trainTimer = 0, descClock = null, playT0 = 0;
   let builtKey = "";
   let recheckDepth = 0, recheckTimer = 0;
   const r1 = (n) => Math.round(n * 10) / 10;
@@ -61,13 +59,6 @@ export function mountScene({ fieldSvg, nameHost, mathHost, fontPx = 50, replayMs
     // compares against the built geometry rather than a later DOM snapshot
     builtKey = [nameX, nameY, nameHost.offsetWidth, docW, docH].join("|");
     const track = nameTrack(raster, nameX, nameY);
-    /* The pen starts untrained. θ₀ is a perturbed hand — wrong slant, wrong
-       size, drifting baseline — and the first pass writes the name with it;
-       the training loop below descends L(θ) until the letters are right. */
-    trainer = makeTrainer(track);
-    fieldRef = field;
-    penFlags = track.pen;
-    const drawn = { pts: trainer.snap(), pen: track.pen };
     // start on a real summit of the surface above the name: the run then
     // visibly crosses contour after contour on its way down into the basin
     /* The approach runs in from the left edge along the name's own line, so it
@@ -94,18 +85,14 @@ export function mountScene({ fieldSvg, nameHost, mathHost, fontPx = 50, replayMs
       startY = y;
     }
     const peak = peakIn(field, 16, nameX + raster.cssW * 0.55, bandTop, bandBottom);
-    const run = descend(field, drawn, {
+    const run = descend(field, track, {
       docW, docH, bandTop, bandBottom,
       start: [startX, startY],
       entry: [-4, 0],
-      dir: -1,
       // loose cap: a binding cap makes every step identical and flattens the
       // path into a straight line
       vmax: 34,
-      minSteps: 8,
     });
-    writeStart = run.writeStart;
-    penStart = run.penStart;
     const { list, total } = pieces(run);
     totalLen = total;
 
@@ -343,27 +330,6 @@ export function mountScene({ fieldSvg, nameHost, mathHost, fontPx = 50, replayMs
     // keep any non-SVG children (the 3D math host lives here)
     nameHost.querySelectorAll(":scope > svg").forEach((el) => el.remove());
     nameHost.appendChild(svg);
-
-    paint();
-  };
-
-  /* One frame of the model: current θ through the pen spring, then straight
-     onto the paths that were already drawn. Only the writing pieces move —
-     the descent above the name is the run that got here and stays put. */
-  const paint = () => {
-    if (!trainer || !fieldRef) return;
-    const pts = penFilter(fieldRef, penStart, trainer.points(), penFlags);
-    const last = pts.length - 1;
-    for (const p of parts) {
-      if (p.mode === "run") continue;
-      const n = p.pts.length;
-      const arr = new Array(n);
-      for (let j = 0; j < n; j++) {
-        const ti = p.i0 + j - writeStart;
-        arr[j] = ti < 0 ? p.pts[j] : pts[Math.min(last, ti)];
-      }
-      p.el.setAttribute("d", pathData(arr));
-    }
   };
 
   const DELAY = 350, SLOW = 3000, FAST = 3100;
@@ -372,9 +338,6 @@ export function mountScene({ fieldSvg, nameHost, mathHost, fontPx = 50, replayMs
     : SLOW + ((x - slowLen) / Math.max(1, totalLen - slowLen)) * FAST);
 
   const settle = () => {
-    clearInterval(trainTick);
-    clearTimeout(trainTimer);
-    if (trainer) { trainer.snap(); paint(); }
     parts.forEach((p) => {
       p.el.removeAttribute("stroke-dasharray");
       p.el.setAttribute("stroke-dashoffset", "0");
@@ -547,8 +510,6 @@ export function mountScene({ fieldSvg, nameHost, mathHost, fontPx = 50, replayMs
       clearInterval(timer);
       clearTimeout(resizeTimer);
       clearTimeout(recheckTimer);
-      clearTimeout(trainTimer);
-      clearInterval(trainTick);
       cancelAnimationFrame(sheenRaf);
       sheen = null;
       window.removeEventListener("resize", onResize);

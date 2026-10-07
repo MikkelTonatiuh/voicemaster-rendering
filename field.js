@@ -4,9 +4,12 @@
    2. edt         – exact Euclidean distance transform of that raster
    3. field       – loss(x,y) = distance-to-name + low-frequency value noise
    4. contours    – marching squares on the field, levels spread to the edges
-   5. descend     – momentum GD driven by the field's own gradient
+   5. descend     – gradient descent on that surface: the approach on the terrain, then one run
+                    down each stroke's valley (valley.js), which is what writes the name
 
    Everything lives in document pixels, so the trail sits in its own basin. */
+
+import { strokesFromTrack, shapeStrokes, fitToTerrain, buildValleys, writeName } from "./valley.js";
 
 export const NAME = "Mikkel T. Ch\u00e1vez Petersen";
 /* A hand, not a typeface set in a hand's clothing: the skeleton we trace is
@@ -566,92 +569,67 @@ export function peakIn(field, x0, x1, y0, y1) {
   return [bx, by];
 }
 
-/* ---------- the run ---------- */
-export function descend(field, track, { start, entry, dir = 1, drift = 3, minSteps = 0, vmax = 10, docW = 1e9, docH = 1e9, bandTop = 14, bandBottom = 1e9, seed = 0x13579b } = {}) {
-  const targets = track.pts;
-  const pen = track.pen;
+/* ---------- the run ----------
+   Two kinds of descent on the one surface.
+
+   The approach comes in from the right edge and runs down the page's contour terrain with momentum, annealed
+   noise and per-coordinate step sizes (RMSProp), until it reaches the name. Every step is -a * (grad f + noise)
+   on the field the contours are drawn from; nothing steers it. It reaches the name because the terrain has a
+   corridor sloping into it (see buildField), not because anything pushes it there.
+
+   The name is then written by one gradient descent per stroke, each started at the top of that stroke's valley
+   (see valley.js). The valleys are part of the surface, so the pen is again only ever rolling downhill. Between
+   strokes the pen lifts, which is a restart of the optimiser, drawn as a faint straight line. */
+export function descend(field, track, { start, entry, vmax = 10, docW = 1e9, docH = 1e9, bandTop = 14, bandBottom = 1e9, seed = 0x13579b, valleys = null } = {}) {
+  /* the valleys are cut into this terrain, so their floors are made steeper than anything the terrain does under them */
+  const terrain = (x, y) => field.grad(x, y);
+  let valleysUsed = valleys;
+  if (!valleysUsed) {
+    const items = shapeStrokes(strokesFromTrack(track));
+    valleysUsed = buildValleys(items, fitToTerrain(items, terrain));
+  }
   const traj = [];
   const mode = [];
-  const first = targets[0];
   const clampX = (x) => Math.min(docW - 14, Math.max(14, x));
   const clampY = (y) => Math.min(bandBottom, Math.max(bandTop, y));
   const rnd = mulberry32(seed);
-
-  /* The approach is momentum SGD on the drawn surface itself: every step is
-     -lr * (grad f + minibatch noise), so the iterates run down the true
-     steepest-descent direction and cross the contours the page draws. */
-  let p = start ? start.slice() : [clampX(first[0] - 78), clampY(bandTop + 6)];
-  let v = entry ? entry.slice() : [0, 0];
-  let lr = 3, temp = 12;
-  const mu = 0.8;
-  const STEPS = 220;
   const iterates = [];
   const grads = [];
 
-  if (entry) {
-    /* Pure momentum SGD on the drawn surface. There is no transport term and
-       no target: the only thing moving the point is -a*(grad f + noise) on the
-       field the contours are drawn from. It reaches the name because the field
-       has a corridor that slopes into the name's well (see buildField), not
-       because anything pushes it there. Every reported gradient and arrow is
-       therefore the real one. */
-    const tx = first[0];
-    traj.length = 0;
-    const mo = 0.5;
-    /* RMSProp with momentum, on the field's own gradient. A valley this
-       ill-conditioned (soft along, stiff across) defeats a single global step
-       size: large enough to cross the page and it oscillates across the walls
-       without descending; small enough to be stable and it never arrives.
-       Dividing each component by the running RMS of its own gradient is the
-       standard cure, so the along-valley axis gets long steps and the stiff
-       cross-valley axis short ones, with no hand-set anisotropy. */
-    let a = 11, T = 1, sq = null;
-    const beta = 0.9, eps = 1e-6;
-    for (let i = 0; i < 70; i++) {
-      const [fx, fy] = field.grad(p[0], p[1]);
-      const gx = fx * 5.5, gy = fy * 5.5;
-      // minibatch noise, annealed: the S in SGD
-      const ex = gx + (rnd() * 2 - 1) * T * 0.4, ey = gy + (rnd() * 2 - 1) * T * 0.4;
-      sq = sq ? [beta * sq[0] + (1 - beta) * ex * ex, beta * sq[1] + (1 - beta) * ey * ey]
-              : [ex * ex, ey * ey];
-      v = [mo * v[0] - a * ex / (Math.sqrt(sq[0]) + eps),
-           mo * v[1] - a * ey / (Math.sqrt(sq[1]) + eps)];
-      const sp = Math.hypot(v[0], v[1]);
-      if (sp > vmax) { v[0] *= vmax / sp; v[1] *= vmax / sp; }
-      grads.push([gx, gy, a]);
-      p = [clampX(p[0] + v[0]), clampY(p[1] + v[1])];
-      traj.push([p[0], p[1]]);
-      mode.push("run");
-      iterates.push([p[0], p[1]]);
-      a *= 0.985;
-      T *= 0.9;
-      if (p[0] <= tx + 6) break;
-    }
+  const firstItem = valleysUsed.items.findIndex((it) => it.kind === "stroke" || it.kind === "dot");
+  const first = firstItem >= 0 ? (valleysUsed.items[firstItem].floor ? valleysUsed.items[firstItem].floor[0] : valleysUsed.items[firstItem].start) : track.pts[0];
 
-  } else
-  for (let i = 0; i < STEPS; i++) {
-    const [gx, gy] = field.grad(p[0], p[1]);
-    const nx = (rnd() * 2 - 1) * temp, ny = (rnd() * 2 - 1) * temp;
-    v = [mu * v[0] - lr * (gx + nx * 0.02), mu * v[1] - lr * (gy + ny * 0.02)];
+  let p = start ? start.slice() : [clampX(first[0] - 78), clampY(bandTop + 6)];
+  let v = entry ? entry.slice() : [0, 0];
+  const tx = first[0];
+  const mo = 0.5;
+  /* RMSProp with momentum, on the field's own gradient. A valley this ill-conditioned (soft along, stiff across)
+     defeats a single global step size: large enough to cross the page and it oscillates across the walls without
+     descending; small enough to be stable and it never arrives. Dividing each component by the running RMS of its
+     own gradient is the standard cure, so the along-valley axis gets long steps and the stiff cross-valley axis
+     short ones, with no hand-set anisotropy. */
+  let a = 11, T = 1, sq = null;
+  const beta = 0.9, eps = 1e-6;
+  for (let i = 0; i < 70; i++) {
+    const [fx, fy] = field.grad(p[0], p[1]);
+    const gx = fx * 5.5, gy = fy * 5.5;
+    // minibatch noise, annealed: the S in SGD
+    const ex = gx + (rnd() * 2 - 1) * T * 0.4, ey = gy + (rnd() * 2 - 1) * T * 0.4;
+    sq = sq ? [beta * sq[0] + (1 - beta) * ex * ex, beta * sq[1] + (1 - beta) * ey * ey] : [ex * ex, ey * ey];
+    v = [mo * v[0] - a * ex / (Math.sqrt(sq[0]) + eps), mo * v[1] - a * ey / (Math.sqrt(sq[1]) + eps)];
     const sp = Math.hypot(v[0], v[1]);
     if (sp > vmax) { v[0] *= vmax / sp; v[1] *= vmax / sp; }
-    grads.push([gx, gy, lr]);
+    grads.push([gx, gy, a]);
     p = [clampX(p[0] + v[0]), clampY(p[1] + v[1])];
     traj.push([p[0], p[1]]);
     mode.push("run");
     iterates.push([p[0], p[1]]);
-    lr *= 0.991;
-    temp *= 0.965;
-    const prev = traj.length > 1 ? traj[traj.length - 2] : null;
-    // the run stops where it lands in the basin. It is never steered toward the
-    // pen's starting point, so it cannot slide along an invisible floor — and
-    // it ends the moment a step stops making progress, so no two iterates are
-    // emitted at the same point.
-    if (i >= minSteps && p[1] >= bandBottom - 6) break;
-    if (prev && Math.hypot(p[0] - prev[0], p[1] - prev[1]) < 1.4) break;
+    a *= 0.985;
+    T *= 0.9;
+    if (p[0] <= tx + 6) break;
   }
 
-  // pen lift: landing point to the first stroke, drawn faintly
+  // pen lift: from where the approach stopped to the top of the first valley, drawn faintly
   const lift = 22;
   const from = traj.length ? traj[traj.length - 1] : [first[0], first[1] - 40];
   for (let i = 1; i <= lift; i++) {
@@ -659,199 +637,19 @@ export function descend(field, track, { start, entry, dir = 1, drift = 3, minSte
     traj.push([from[0] + (first[0] - from[0]) * t, from[1] + (first[1] - from[1]) * t]);
     mode.push("travel");
   }
-  p = traj[traj.length - 1].slice();
-
-  // writing: the pen tracks the level set; a light pull from the field's own
-  // gradient keeps it seated in the stroke instead of cutting corners.
   const writeStart = traj.length;
-  const penStart = p.slice();
-  let vv = [0, 0];
-  for (let i = 0; i < targets.length; i++) {
-    const t = targets[i];
-    const [gx, gy] = field.grad(p[0], p[1]);
-    const fx = (t[0] - p[0]) * 0.78 - gx * 0.02;
-    const fy = (t[1] - p[1]) * 0.78 - gy * 0.02;
-    vv = [0.3 * vv[0] + fx, 0.3 * vv[1] + fy];
-    p = [p[0] + vv[0], p[1] + vv[1]];
-    traj.push([p[0], p[1]]);
-    mode.push(pen[i] ? "draw" : "travel");
+  const penStart = traj[traj.length - 1].slice();
+
+  // writing: one descent per valley, each from the top; between them the pen lifts
+  const runs = writeName(valleysUsed, terrain);
+  let at = penStart;
+  for (const r of runs) {
+    if (r.kind === "skip" || !r.path.length) continue;
+    if (Math.hypot(r.path[0][0] - at[0], r.path[0][1] - at[1]) > 1e-6) { traj.push(r.path[0].slice()); mode.push("travel"); }
+    for (let i = 1; i < r.path.length; i++) { traj.push(r.path[i]); mode.push("draw"); }
+    at = r.path[r.path.length - 1];
   }
-
-  // settle into the minimum
-  const last = targets[targets.length - 1];
-  for (let i = 0; i < 60; i++) {
-    vv = [0.6 * vv[0] - 0.5 * (p[0] - last[0]), 0.6 * vv[1] - 0.5 * (p[1] - last[1])];
-    p = [p[0] + vv[0], p[1] + vv[1]];
-    traj.push([p[0], p[1]]);
-    mode.push("draw");
-  }
-  return { pts: traj, mode, iterates, grads, runLen: iterates.length, writeStart, penStart };
-}
-
-/* ---------- the handwriting model ----------
-
-   θ is the state of a hand, not of the letters: per stroke, an affine
-   (scale, slant, shear, offset) plus two low-frequency warp terms. The target
-   θ* is the identity, so the model at θ* reproduces the signature exactly.
-
-   L(θ) = mean squared distance from the target strokes. The model is linear
-   in θ, so L is a genuine convex quadratic and the gradient below is its
-   exact derivative — no finite differences. Steps are minibatch (a random
-   subset of points each step), so the loss falls the way a real training
-   curve falls: downward, but not monotonically.
-
-   Per-parameter step sizes are 1/H on the diagonal of the Hessian, constant
-   here and precomputed. That is diagonal Newton; without it a single lr
-   cannot serve both a 40px letter and a 2px i-dot. */
-export function makeTrainer(track, { seed = 0x51ed270b, lr = 0.35, mu = 0.86, batch = 0.45, epochSteps = 15, epochs = 8 } = {}) {
-  const rnd = mulberry32(seed);
-  const n0 = (s) => s * (rnd() * 2 - 1);
-  const strokes = [];
-  let cur = null;
-  for (let i = 0; i < track.pts.length; i++) {
-    if (!cur || !track.pen[i]) { cur = { i0: i, q: [] }; strokes.push(cur); }
-    cur.q.push(track.pts[i]);
-  }
-
-  /* Mostly per-letter, with a light shared drift on top. A purely global error
-     just slides the whole word into place, which reads as text being nudged
-     rather than a hand learning to write. */
-  const G = [n0(0.05), n0(0.18), n0(2.0), n0(0.04), n0(0.07), n0(1.8), n0(0.8), n0(1.2)];
-
-  for (const s of strokes) {
-    const n = s.q.length;
-    let cx = 0, cy = 0;
-    for (const [x, y] of s.q) { cx += x; cy += y; }
-    cx /= n; cy /= n;
-    let r2 = 0;
-    for (const [x, y] of s.q) r2 += (x - cx) ** 2 + (y - cy) ** 2;
-    const R = Math.max(1.2, Math.sqrt(r2 / n));
-    s.cx = cx; s.cy = cy; s.R = R; s.n = n;
-    s.u = new Float64Array(n); s.v = new Float64Array(n);
-    s.sx = new Float64Array(n); s.sy = new Float64Array(n);
-    for (let i = 0; i < n; i++) {
-      s.u[i] = (s.q[i][0] - cx) / R;
-      s.v[i] = (s.q[i][1] - cy) / R;
-      const t = n > 1 ? i / (n - 1) : 0;
-      s.sx[i] = Math.sin(Math.PI * t);
-      s.sy[i] = Math.sin(2 * Math.PI * t);
-    }
-    let hu = 0, hv = 0, hsx = 0, hsy = 0;
-    for (let i = 0; i < n; i++) {
-      hu += (s.u[i] * R) ** 2; hv += (s.v[i] * R) ** 2;
-      hsx += s.sx[i] ** 2; hsy += s.sy[i] ** 2;
-    }
-    const inv = (h) => 1 / Math.max(1e-4, (2 / n) * h);
-    s.ih = [inv(hu), inv(hv), 0.5, inv(hu), inv(hv), 0.5, inv(hsx), inv(hsy)];
-    s.init = Float64Array.from([
-      1 + G[0] + n0(0.16), G[1] + n0(0.42), G[2] + n0(4.5),
-      G[3] + n0(0.14), 1 + G[4] + n0(0.20), G[5] + n0(4.0),
-      G[6] + n0(2.4), G[7] + n0(3.0),
-    ]);
-    s.p = Float64Array.from(s.init);
-    s.vel = new Float64Array(8);
-  }
-
-  const maxSteps = epochSteps * epochs;
-  const out = new Array(track.pts.length);
-  let steps = 0;
-
-  const render = () => {
-    for (const s of strokes) {
-      const [a, b, e, c, d, f, wx, wy] = s.p;
-      for (let i = 0; i < s.n; i++) {
-        out[s.i0 + i] = [
-          s.cx + (a * s.u[i] + b * s.v[i]) * s.R + e + wx * s.sx[i],
-          s.cy + (c * s.u[i] + d * s.v[i]) * s.R + f + wy * s.sy[i],
-        ];
-      }
-    }
-    return out;
-  };
-
-  const loss = () => {
-    let sum = 0, N = 0;
-    for (const s of strokes) {
-      const [a, b, e, c, d, f, wx, wy] = s.p;
-      for (let i = 0; i < s.n; i++) {
-        const rx = (a - 1) * s.u[i] * s.R + b * s.v[i] * s.R + e + wx * s.sx[i];
-        const ry = c * s.u[i] * s.R + (d - 1) * s.v[i] * s.R + f + wy * s.sy[i];
-        sum += rx * rx + ry * ry; N++;
-      }
-    }
-    return N ? sum / N : 0;
-  };
-
-  const step = () => {
-    if (steps >= maxSteps) return;
-    for (const s of strokes) {
-      const [a, b, e, c, d, f, wx, wy] = s.p;
-      const g = [0, 0, 0, 0, 0, 0, 0, 0];
-      let N = 0;
-      for (let i = 0; i < s.n; i++) {
-        if (s.n > 6 && rnd() > batch) continue;
-        const u = s.u[i], v = s.v[i], R = s.R, px = s.sx[i], py = s.sy[i];
-        const rx = (a - 1) * u * R + b * v * R + e + wx * px;
-        const ry = c * u * R + (d - 1) * v * R + f + wy * py;
-        g[0] += rx * u * R; g[1] += rx * v * R; g[2] += rx; g[6] += rx * px;
-        g[3] += ry * u * R; g[4] += ry * v * R; g[5] += ry; g[7] += ry * py;
-        N++;
-      }
-      if (!N) continue;
-      for (let k = 0; k < 8; k++) {
-        s.vel[k] = mu * s.vel[k] - lr * s.ih[k] * ((2 / N) * g[k]);
-        s.p[k] += s.vel[k];
-      }
-    }
-    steps++;
-  };
-
-  const L0 = loss();
-  return {
-    epochs, epochSteps, maxSteps,
-    get steps() { return steps; },
-    get epoch() { return Math.min(epochs, Math.floor(steps / epochSteps) + 1); },
-    get done() { return steps >= maxSteps; },
-    get loss() { return L0 ? loss() / L0 : 0; },
-    step,
-    points: render,
-    reset() {
-      steps = 0;
-      for (const s of strokes) { s.p.set(s.init); s.vel.fill(0); }
-      return render();
-    },
-    snap() {
-      steps = maxSteps;
-      for (const s of strokes) { s.p.set([1, 0, 0, 0, 1, 0, 0, 0]); s.vel.fill(0); }
-      return render();
-    },
-  };
-}
-
-/* The pen has mass: the same spring that seats the written line inside the
-   stroke in descend(), so a trained frame and the finished drawing are made
-   the same way and the handoff between them is invisible. */
-export function penFilter(field, start, pts, pen) {
-  let p = start.slice(), vv = [0, 0];
-  const out = new Array(pts.length);
-  for (let i = 0; i < pts.length; i++) {
-    const t = pts[i];
-    /* A stroke start is a landing, not a continuation. Carrying the velocity
-       of a long travel move into it makes the pen overshoot and spring back,
-       which is survivable inside a letter and fatal on a mark: a one-pixel
-       period smears into a six-pixel dash. Set the nib down where it was
-       aimed and let the spring start from rest. */
-    if (pen && !pen[i]) { p = t.slice(); vv = [0, 0]; out[i] = p; continue; }
-    const [gx, gy] = field.grad(p[0], p[1]);
-    /* Coupling is deliberately tiny. It exists to give the stroke a little of
-       the terrain's character; the valley's gradient is an order of magnitude
-       larger than the old terrain's, and at the old weight it pulled the
-       letterforms apart. */
-    vv = [0.3 * vv[0] + (t[0] - p[0]) * 0.78 - gx * 0.02, 0.3 * vv[1] + (t[1] - p[1]) * 0.78 - gy * 0.02];
-    p = [p[0] + vv[0], p[1] + vv[1]];
-    out[i] = p;
-  }
-  return out;
+  return { pts: traj, mode, iterates, grads, runLen: iterates.length, writeStart, penStart, valleys: valleysUsed, runs };
 }
 
 /* split a run into contiguous same-mode pieces, with each piece's start

@@ -22,7 +22,8 @@ then open http://localhost:8000
 ## Files
 
 - `index.html` — the site
-- `field.js` — noise field, marching-squares contours, name raster, gradient descent
+- `field.js` — noise field, marching-squares contours, name raster, the approach run
+- `valley.js` — the letters of the name as valleys in that field, and the descents that write them
 - `scene.js` — animation timeline, pen strokes, arrows, ripple
 - `math3d.js` — the equation renderer
 - `blop/` — the mascot (WebGL)
@@ -33,7 +34,8 @@ then open http://localhost:8000
 - `voice/engine.js` — the analysis engine (see below)
 - `voice/models/` — the example voices (real actors from CREMA-D) and `lines.json`, the practice lines
 - `tools/crema-d-examples.mjs` — picks the example voices from CREMA-D and tests the scoring on real voices
-- `tests/` — tests for the engine and for how Blop uses it
+- `tests/` — tests for the engine, for how Blop uses it, and for how the name is written
+  (`tests/fixtures/` holds the name as the page measured it at four window widths)
 - `cv/thesis.pdf` — the bachelor thesis
 - `thesis/` — the thesis explained: its pages beside an interactive figure for each method and
   result (the thesis title on the CV opens it; the PDF stays one click away)
@@ -41,6 +43,25 @@ then open http://localhost:8000
 - `standalone.html` — the whole site inlined into one file. Works by double-clicking,
   no server needed. Not required for GitHub Pages; keep or delete as you like. It predates
   the practice loop below and does not include it.
+
+## How the name is written
+
+The name at the top is written by gradient descent. The page draws the contours of a loss surface
+(`buildField` in `field.js`). A point comes in from the right and rolls down that terrain, with momentum
+and annealed noise, until it reaches the name. The letters are then cut into the same surface as
+valleys (`valley.js`): every stroke is a trench about a pixel wide whose floor slopes down from the start
+of the stroke to its end, and every mark (the dot of the i, the period, the accent) is a small pit. The pen
+is a point doing gradient descent with momentum on the terrain plus the valleys, started at the top of a
+stroke's valley. It has nowhere to go but down it, so its iterates are the stroke. When a stroke ends the
+pen lifts, which is a restart of the optimiser at the top of the next valley (the faint straight lines).
+
+What is arranged rather than found: the shape of each valley comes from thinning a raster of the name
+(`nameTrack`); where two strokes would touch, one is trimmed back a pixel or two; the specks the thinning
+leaves beside some letters are dropped; the valley's slope is set to three times the steepest terrain under
+the name, so the terrain can't push the pen back up it; and the terrain has a corridor that slopes down into
+the name. `tests/name-writing.test.mjs` rebuilds the page's surface at four window widths and checks that
+every stroke rolls to the end of its valley, that plain gradient descent without momentum writes the same
+name more slowly, and that with the valleys' gradient switched off nothing is written.
 
 ## Practice loop
 
@@ -112,4 +133,4 @@ someone who is copying it should score higher.
 
 Run the tests (Node 18 or newer):
 
-    node --test tests/engine.test.js tests/blop-local.test.mjs
+    node --test tests/engine.test.js tests/blop-local.test.mjs tests/name-writing.test.mjs
