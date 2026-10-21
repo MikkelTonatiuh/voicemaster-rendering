@@ -31,6 +31,9 @@
   .dl { display: inline-flex; align-items: center; gap: 6px; margin-left: 0.5em; padding: 2px 11px 2px 9px; border: 1px solid var(--warm-text); border-radius: 999px; color: var(--warm-text); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; line-height: 16px; white-space: nowrap; vertical-align: 1px; transition: background-color 0.15s, color 0.15s; }
   .dl:hover { background: var(--warm-text); color: var(--bg); text-decoration: none; }
   .dl svg { width: 11px; height: 11px; flex: none; }
+  .skills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; }
+  .skills code { font-family: ui-monospace, Consolas, 'Cascadia Mono', monospace; font-size: 12px; color: var(--ink); border: 1px solid color-mix(in srgb, var(--ink) 28%, transparent); border-bottom-width: 2px; border-radius: 5px; padding: 1px 8px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .skills .sep { width: 1px; height: 14px; background: color-mix(in srgb, var(--ink) 30%, transparent); margin: 0 4px; }
   .mark { background: color-mix(in srgb, var(--warm-text) 20%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
@@ -66,7 +69,7 @@
     <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }}<a class="dl" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ dlHint }}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ dlLabel }}</a></p>
     <div style="margin: 0 0 34px; font-size: 13px; opacity: 0.72">
       <p style="margin: 0 0 6px">{{ meta }}</p>
-      <p style="margin: 0 0 10px">{{ skills }}</p>
+      <div class="skills"><code>Python</code><code>R</code><code>SQL</code><code>Java</code><span class="sep"></span><code>PyTorch</code></div>
       <nav style="display: flex; flex-wrap: wrap; gap: 16px">
       <a href="mailto:mikkeltcp@hotmail.com">Email</a>
       <a href="https://github.com/MikkelTonatiuh">GitHub</a>
