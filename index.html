@@ -31,6 +31,7 @@
   .dl { display: inline-flex; align-items: center; gap: 6px; margin-left: 0.5em; padding: 2px 11px 2px 9px; border: 1px solid var(--warm-text); border-radius: 999px; color: var(--warm-text); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; line-height: 16px; white-space: nowrap; vertical-align: 1px; transition: background-color 0.15s, color 0.15s; }
   .dl:hover { background: var(--warm-text); color: var(--bg); text-decoration: none; }
   .dl svg { width: 11px; height: 11px; flex: none; }
+  .mark { background: color-mix(in srgb, var(--warm-text) 20%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
 
@@ -73,12 +74,26 @@
       </nav>
     </div>
 
+    <article data-mutter="rsna" style="margin: 0 0 28px">
+      <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ compLabel }}</p>
+      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+        <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection">2026 RSNA Knee Abnormality Detection AI Challenge</a>
+      </h3>
+      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">{{ rsnaMeta }}</p>
+      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ rsnaTop }}</span> {{ rsnaRank }} <b style="font-weight: 600">{{ rsnaCount }}</b> {{ rsnaTail }}</p>
+      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ rsnaCopy }}</p>
+      <nav style="display: flex; gap: 16px; font-size: 13px; opacity: 0.72">
+        <a href="https://www.rsna.org/artificial-intelligence/ai-image-challenge/knee-mri-ai-challenge">RSNA</a>
+        <a href="https://www.kaggle.com/code/ryanholbrook/rsna-knee-abnormalities-efficiency-lb?scriptVersionId=360917682">{{ rsnaRankLink }}</a>
+      </nav>
+    </article>
+
     <article data-mutter="paper" style="margin: 0 0 26px">
       <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ pubLabel }}</p>
       <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
         <a href="https://doi.org/10.3390/jimaging11020041">Pano-GAN: A Deep Generative Model for Panoramic Dental Radiographs</a>
       </h3>
-      <p style="margin: 0; font-size: 13px; opacity: 0.72">Journal of Imaging, 2025</p>
+      <p style="margin: 0; font-size: 13px"><span class="mark">{{ pubMeta }}</span></p>
     </article>
 
     <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ thesisLabel }}</p>
@@ -108,20 +123,6 @@
       </div>
     </article>
 
-    <article data-mutter="rsna" style="margin: 0 0 28px">
-      <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ compLabel }}</p>
-      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
-        <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection">2026 RSNA Knee Abnormality Detection AI Challenge</a>
-      </h3>
-      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">{{ rsnaMeta }}</p>
-      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ rsnaCopy }}</p>
-      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ rsnaRank }}</p>
-      <nav style="display: flex; gap: 16px; font-size: 13px; opacity: 0.72">
-        <a href="https://www.rsna.org/artificial-intelligence/ai-image-challenge/knee-mri-ai-challenge">RSNA</a>
-        <a href="https://www.kaggle.com/code/ryanholbrook/rsna-knee-abnormalities-efficiency-lb?scriptVersionId=356869686">{{ rsnaRankLink }}</a>
-      </nav>
-    </article>
-
     <div data-mutter="edu">
       <h2 style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ eduLabel }}</h2>
       <p style="margin: 0; font-size: 15px">BSc Data Science, Aarhus University, 2026</p>
@@ -148,7 +149,11 @@ class Component extends DCLogic {
       thesis: "A Wav2Vec2 model that classifies short speech as calm, excited, or authoritative.",
       vm: "The practice site from the thesis.",
       rsna: "Multi-plane knee MRI, twelve findings, labels from multilingual reports.",
-      rsnaRank: "Top 0.5% on the Efficiency Prize leaderboard: 24th of 5,477 teams (public standings, October 2026).",
+      rsnaTop: "Top 1%",
+      rsnaRank: "on the Efficiency Prize leaderboard:",
+      rsnaCount: "49th of 6,222 teams",
+      rsnaTail: "(public standings, October 2026).",
+      pubMeta: "Published in Journal of Imaging, 2025",
       rsnaRankLink: "Efficiency leaderboard",
       edu: "Education",
       pubLabel: "Publication",
@@ -172,7 +177,11 @@ class Component extends DCLogic {
       thesis: "Un modelo Wav2Vec2 que clasifica habla breve como calm, excited o authoritative.",
       vm: "El sitio de práctica de la tesis.",
       rsna: "RM de rodilla en varios planos, doce hallazgos, etiquetas desde informes multilingües.",
-      rsnaRank: "Top 0,5 % en la clasificación del Efficiency Prize: puesto 24 de 5.477 equipos (clasificación pública, octubre de 2026).",
+      rsnaTop: "Top 1 %",
+      rsnaRank: "en la clasificación del Efficiency Prize:",
+      rsnaCount: "puesto 49 de 6.222 equipos",
+      rsnaTail: "(clasificación pública, octubre de 2026).",
+      pubMeta: "Publicado en Journal of Imaging, 2025",
       rsnaRankLink: "Clasificación de eficiencia",
       edu: "Educación",
       pubLabel: "Publicación",
@@ -196,7 +205,11 @@ class Component extends DCLogic {
       thesis: "En Wav2Vec2-model der klassificerer kort tale som calm, excited eller authoritative.",
       vm: "Træningssitet fra bachelorprojektet.",
       rsna: "Knæ-MRI i flere planer, tolv fund, labels fra flersprogede beskrivelser.",
-      rsnaRank: "Top 0,5 % på Efficiency Prize-ranglisten: nr. 24 af 5.477 hold (offentlig stilling, oktober 2026).",
+      rsnaTop: "Top 1 %",
+      rsnaRank: "på Efficiency Prize-ranglisten:",
+      rsnaCount: "nr. 49 af 6.222 hold",
+      rsnaTail: "(offentlig stilling, oktober 2026).",
+      pubMeta: "Udgivet i Journal of Imaging, 2025",
       rsnaRankLink: "Effektivitetsrangliste",
       edu: "Uddannelse",
       pubLabel: "Publikation",
@@ -374,7 +387,11 @@ class Component extends DCLogic {
       thesisCopy: copy.thesis,
       vmCopy: copy.vm,
       rsnaCopy: copy.rsna,
+      rsnaTop: copy.rsnaTop,
       rsnaRank: copy.rsnaRank,
+      rsnaCount: copy.rsnaCount,
+      rsnaTail: copy.rsnaTail,
+      pubMeta: copy.pubMeta,
       rsnaRankLink: copy.rsnaRankLink,
       eduLabel: copy.edu,
       pubLabel: copy.pubLabel,
