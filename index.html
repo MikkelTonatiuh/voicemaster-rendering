@@ -37,6 +37,10 @@
   .skills .sep { width: 1px; height: 14px; background: color-mix(in srgb, var(--ink) 30%, transparent); margin: 0 4px; }
   .skills .caret { width: 8px; height: 16px; background: var(--warm-text); margin-left: 3px; animation: caret 1.06s step-end infinite; }
   @keyframes caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  .contact { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; font-size: 14px; }
+  .contact a { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 500; }
+  .contact svg { width: 15px; height: 15px; flex: none; color: var(--warm-text); }
+  .contact .arr { color: var(--warm-text); font-size: 12px; }
   .mark { background: color-mix(in srgb, var(--warm-text) 20%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
@@ -70,14 +74,14 @@
     </h1>
 
     <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }}<a class="dl" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ dlHint }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ dlLabel }} &#8599;</a></p>
-    <div style="margin: 0 0 34px; font-size: 13px; opacity: 0.72">
-      <p style="margin: 0 0 6px">{{ meta }}</p>
+    <div style="margin: 0 0 34px; font-size: 13px">
+      <p style="margin: 0 0 6px; opacity: 0.72">{{ meta }}</p>
       <fieldset class="skills"><legend>{{ skillsLabel }}</legend><code>Python</code><code>R</code><code>SQL</code><code>Java</code><span class="sep"></span><code>PyTorch</code><span class="caret" aria-hidden="true"></span></fieldset>
-      <nav style="display: flex; flex-wrap: wrap; gap: 16px">
-      <a href="mailto:mikkeltcp@hotmail.com">Email</a>
-      <a href="https://github.com/MikkelTonatiuh">GitHub</a>
-        <a href="https://www.linkedin.com/in/mikkel-chavez">LinkedIn</a>
-        <a href="https://www.kaggle.com/bliverrigpdoge">Kaggle</a>
+      <nav class="contact">
+        <a href="mailto:mikkeltcp@hotmail.com"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m3.5 7 8.5 6 8.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>mikkeltcp@hotmail.com</a>
+        <a href="https://github.com/MikkelTonatiuh">GitHub <span class="arr">&#8599;</span></a>
+        <a href="https://www.linkedin.com/in/mikkel-chavez">LinkedIn <span class="arr">&#8599;</span></a>
+        <a href="https://www.kaggle.com/bliverrigpdoge">Kaggle <span class="arr">&#8599;</span></a>
       </nav>
     </div>
 
