@@ -28,12 +28,16 @@
   a:hover { text-decoration: underline; text-underline-offset: 3px; }
   :focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; }
   h1 svg { overflow: visible; }
-  .dl { display: inline-flex; align-items: center; gap: 6px; margin-left: 0.5em; padding: 2px 11px 2px 9px; border: 1px solid var(--warm-text); border-radius: 999px; color: var(--warm-text); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; line-height: 16px; white-space: nowrap; vertical-align: 1px; transition: background-color 0.15s, color 0.15s; }
+  .dl { display: inline-flex; align-items: center; gap: 7px; margin-left: 0.5em; padding: 2px 12px 2px 9px; border: 1px solid color-mix(in srgb, var(--warm-text) 55%, transparent); background: color-mix(in srgb, var(--warm-text) 12%, transparent); border-radius: 999px; color: var(--warm-text); font-size: 13px; font-weight: 600; line-height: 18px; white-space: nowrap; vertical-align: 1px; transition: background-color 0.15s, color 0.15s; }
   .dl:hover { background: var(--warm-text); color: var(--bg); text-decoration: none; }
-  .dl svg { width: 11px; height: 11px; flex: none; }
-  .skills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; }
-  .skills code { font-family: ui-monospace, Consolas, 'Cascadia Mono', monospace; font-size: 12px; color: var(--ink); border: 1px solid color-mix(in srgb, var(--ink) 28%, transparent); border-bottom-width: 2px; border-radius: 5px; padding: 1px 8px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .dl svg { width: 15px; height: 15px; flex: none; }
+  .skills { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0 12px; padding: 6px 12px 10px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 9px; min-width: 0; max-width: 100%; box-sizing: border-box; }
+  .skills legend { padding: 0 6px; margin-left: -2px; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--warm-text); }
+  .skills code { font-family: ui-monospace, Consolas, 'Cascadia Mono', monospace; font-size: 12px; font-weight: 600; color: var(--warm-text); border: 1px solid color-mix(in srgb, var(--ink) 28%, transparent); border-bottom-width: 2px; border-radius: 5px; padding: 1px 8px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
   .skills .sep { width: 1px; height: 14px; background: color-mix(in srgb, var(--ink) 30%, transparent); margin: 0 4px; }
+  .skills .caret { width: 7px; height: 14px; background: var(--warm-text); margin-left: 2px; animation: caret 1.1s steps(1) infinite; }
+  @keyframes caret { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .skills .caret { animation: none; } }
   .mark { background: color-mix(in srgb, var(--warm-text) 20%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
@@ -66,10 +70,10 @@
       <span ref="{{ mathRef }}" aria-hidden="true" style="position: absolute; display: block; max-width: 100%; width: 330px; height: 96px; opacity: 0; pointer-events: none; z-index: 2"></span>
     </h1>
 
-    <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }}<a class="dl" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ dlHint }}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ dlLabel }}</a></p>
+    <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }}<a class="dl" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ dlHint }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ dlLabel }} &#8599;</a></p>
     <div style="margin: 0 0 34px; font-size: 13px; opacity: 0.72">
       <p style="margin: 0 0 6px">{{ meta }}</p>
-      <div class="skills"><code>Python</code><code>R</code><code>SQL</code><code>Java</code><span class="sep"></span><code>PyTorch</code></div>
+      <fieldset class="skills"><legend>{{ skillsLabel }}</legend><code>Python</code><code>R</code><code>SQL</code><code>Java</code><span class="sep"></span><code>PyTorch</code><span class="caret" aria-hidden="true"></span></fieldset>
       <nav style="display: flex; flex-wrap: wrap; gap: 16px">
       <a href="mailto:mikkeltcp@hotmail.com">Email</a>
       <a href="https://github.com/MikkelTonatiuh">GitHub</a>
@@ -145,10 +149,11 @@ class Component extends DCLogic {
       themeDark: "Light",
       themeLight: "Dark",
       intro: "Data science at Aarhus University. I like training deep learning models, whatever the domain. Outside that, fitness and health.",
-      dlLabel: "Download my routine",
+      dlLabel: "My training app",
       dlHint: "My 7-day machine workout, as an app",
       meta: "Odder, Denmark · Danish native · English C2 · Spanish basic",
       skills: "Python, R, SQL, Java · PyTorch",
+      skillsLabel: "Skills",
       thesis: "A Wav2Vec2 model that classifies short speech as calm, excited, or authoritative.",
       vm: "The practice site from the thesis.",
       rsna: "Multi-plane knee MRI, twelve findings, labels from multilingual reports.",
@@ -173,10 +178,11 @@ class Component extends DCLogic {
       themeDark: "Claro",
       themeLight: "Oscuro",
       intro: "Ciencia de datos en la Universidad de Aarhus. Me gusta entrenar modelos de deep learning, sea el dominio que sea. Fuera de eso, fitness y salud.",
-      dlLabel: "Descargar mi rutina",
+      dlLabel: "Mi app de entrenamiento",
       dlHint: "Mi rutina de 7 días con máquinas, como app",
       meta: "Odder, Dinamarca · danés nativo · inglés C2 · español básico",
       skills: "Python, R, SQL, Java · PyTorch",
+      skillsLabel: "Habilidades",
       thesis: "Un modelo Wav2Vec2 que clasifica habla breve como calm, excited o authoritative.",
       vm: "El sitio de práctica de la tesis.",
       rsna: "RM de rodilla en varios planos, doce hallazgos, etiquetas desde informes multilingües.",
@@ -201,10 +207,11 @@ class Component extends DCLogic {
       themeDark: "Lys",
       themeLight: "Mørk",
       intro: "Datavidenskab på Aarhus Universitet. Jeg kan godt lide at træne deep learning-modeller, uanset domænet. Udenfor det, fitness og sundhed.",
-      dlLabel: "Download min rutine",
+      dlLabel: "Min træningsapp",
       dlHint: "Min 7-dages maskinrutine som app",
       meta: "Odder, Danmark · dansk indfødt · engelsk C2 · spansk på begynderniveau",
       skills: "Python, R, SQL, Java · PyTorch",
+      skillsLabel: "Kompetencer",
       thesis: "En Wav2Vec2-model der klassificerer kort tale som calm, excited eller authoritative.",
       vm: "Træningssitet fra bachelorprojektet.",
       rsna: "Knæ-MRI i flere planer, tolv fund, labels fra flersprogede beskrivelser.",
@@ -375,6 +382,7 @@ class Component extends DCLogic {
     return {
       intro: copy.intro,
       dlLabel: copy.dlLabel,
+      skillsLabel: copy.skillsLabel,
       dlHint: copy.dlHint,
       openLabel: copy.openLabel,
       themeLabel: this.state.theme === "light" ? copy.themeLight : copy.themeDark,
