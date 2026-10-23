@@ -42,6 +42,20 @@
   .contact svg { width: 15px; height: 15px; flex: none; color: var(--warm-text); }
   .contact .arr { color: var(--warm-text); font-size: 12px; }
   .mark { background: color-mix(in srgb, var(--warm-text) 20%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+  .tl-item { position: relative; display: flow-root; }
+  .tl-item:last-child > article, .tl-item:last-child > div { margin-bottom: 0 !important; }
+  .tl-item::before { content: ""; position: absolute; left: -23px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warm) 22%, transparent); }
+  .tl-item:not(:last-child)::after { content: ""; position: absolute; left: -20px; top: 16px; bottom: -5px; width: 1px; background: color-mix(in srgb, var(--warm) 38%, transparent); }
+  .tl-label { position: relative; }
+  .tl-label .when { position: absolute; right: calc(100% + 38px); top: 0; white-space: nowrap; font-size: 12.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ink); opacity: 0.55; }
+  @media (max-width: 860px) {
+    .tl-item::before { left: -15px; }
+    .tl-item:not(:last-child)::after { left: -12px; }
+    .tl-label .when { position: static; float: right; margin-left: 12px; }
+    .vid { gap: 12px; padding-right: 12px; }
+    .vid img { width: 104px; }
+    .vid-cap { font-size: 13.5px; }
+  }
   .vid { display: flex; align-items: center; gap: 14px; width: fit-content; max-width: 100%; margin: 0 0 14px; padding: 6px 16px 6px 6px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; box-sizing: border-box; transition: border-color 0.15s; }
   .vid:hover { border-color: var(--warm-text); text-decoration: none; }
   .vid img { display: block; width: 136px; height: auto; aspect-ratio: 16 / 9; border-radius: 6px; flex: none; background: #000; }
@@ -93,8 +107,10 @@
       </nav>
     </div>
 
+    <div class="tl">
+    <section class="tl-item">
     <article data-mutter="rsna" style="margin: 0 0 28px">
-      <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ compLabel }}</p>
+      <p class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenRsna }}</span>{{ compLabel }}</p>
       <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
         <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection">2026 RSNA Knee Abnormality Detection AI Challenge</a>
       </h3>
@@ -116,21 +132,15 @@
       </nav>
     </article>
 
-    <article data-mutter="paper" style="margin: 0 0 26px">
-      <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ pubLabel }}</p>
-      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
-        <a href="https://doi.org/10.3390/jimaging11020041">Pano-GAN: A Deep Generative Model for Panoramic Dental Radiographs</a>
-      </h3>
-      <p style="margin: 0; font-size: 13px"><span class="mark">{{ pubMeta }}</span></p>
-    </article>
-
-    <p style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ thesisLabel }}</p>
+    </section>
+    <section class="tl-item">
+    <p class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenThesis }}</span>{{ thesisLabel }}</p>
     <article style="margin: 0 0 26px">
       <div data-mutter="thesis">
         <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
           <a href="thesis/">Development of an AI System for Improving Speaking Skills through Voice Modulation and Tone Practice</a>
         </h3>
-        <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">2026 · <a href="cv/thesis.pdf">PDF</a></p>
+        <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72"><a href="cv/thesis.pdf">PDF</a></p>
         <p style="margin: 0; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ thesisCopy }}</p>
       </div>
       <div style="display: flex; align-items: center; gap: 18px; margin: 16px 0 0; flex-wrap: wrap">
@@ -151,9 +161,23 @@
       </div>
     </article>
 
-    <div data-mutter="edu">
-      <h2 style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)">{{ eduLabel }}</h2>
-      <p style="margin: 0; font-size: 15px">BSc Data Science, Aarhus University, 2026</p>
+    </section>
+    <section class="tl-item">
+    <div data-mutter="edu" style="margin: 0 0 26px">
+      <h2 class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenEdu }}</span>{{ eduLabel }}</h2>
+      <p style="margin: 0; font-size: 15px">BSc Data Science, Aarhus University</p>
+    </div>
+    </section>
+    <section class="tl-item">
+    <article data-mutter="paper" style="margin: 0 0 26px">
+      <p class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenPub }}</span>{{ pubLabel }}</p>
+      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+        <a href="https://doi.org/10.3390/jimaging11020041">Pano-GAN: A Deep Generative Model for Panoramic Dental Radiographs</a>
+      </h3>
+      <p style="margin: 0; font-size: 13px"><span class="mark">{{ pubMeta }}</span></p>
+    </article>
+
+    </section>
     </div>
   </main>
 </div>
@@ -199,7 +223,11 @@ class Component extends DCLogic {
       compLabel: "Competition",
       equalAuthor: "Equal author",
       vmMeta: "In progress",
-      rsnaMeta: "Kaggle, October 2026",
+      rsnaMeta: "Kaggle",
+      whenRsna: "Oct 2026",
+      whenThesis: "2026",
+      whenEdu: "2026",
+      whenPub: "2025",
     },
     es: {
       lede: "Busco studentermedhjælper o internship en ingeniería de ML, zona de Aarhus.",
@@ -236,7 +264,11 @@ class Component extends DCLogic {
       compLabel: "Competición",
       equalAuthor: "Autoría compartida",
       vmMeta: "En curso",
-      rsnaMeta: "Kaggle, octubre de 2026",
+      rsnaMeta: "Kaggle",
+      whenRsna: "oct 2026",
+      whenThesis: "2026",
+      whenEdu: "2026",
+      whenPub: "2025",
     },
     da: {
       lede: "Søger studentermedhjælper eller internship i ML-engineering, pendlingsafstand Aarhus.",
@@ -273,7 +305,11 @@ class Component extends DCLogic {
       compLabel: "Konkurrence",
       equalAuthor: "Delt forfatterskab",
       vmMeta: "I gang",
-      rsnaMeta: "Kaggle, oktober 2026",
+      rsnaMeta: "Kaggle",
+      whenRsna: "okt. 2026",
+      whenThesis: "2026",
+      whenEdu: "2026",
+      whenPub: "2025",
     },
   };
 
@@ -465,6 +501,10 @@ class Component extends DCLogic {
       equalAuthor: copy.equalAuthor,
       vmMeta: copy.vmMeta,
       rsnaMeta: copy.rsnaMeta,
+      whenRsna: copy.whenRsna,
+      whenThesis: copy.whenThesis,
+      whenEdu: copy.whenEdu,
+      whenPub: copy.whenPub,
       mutter: this.state.mutter,
       enOn: on("en"),
       esOn: on("es"),
