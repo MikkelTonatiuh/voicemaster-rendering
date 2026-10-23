@@ -42,6 +42,11 @@
   .contact svg { width: 15px; height: 15px; flex: none; color: var(--warm-text); }
   .contact .arr { color: var(--warm-text); font-size: 12px; }
   .mark { background: color-mix(in srgb, var(--warm-text) 20%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+  .tag { font-size: 12px; font-weight: 600; opacity: 0.55; margin-right: 8px; }
+  .pdf { font-size: 13px; font-weight: 500; opacity: 0.7; margin-left: 8px; white-space: nowrap; }
+  .ilink { display: inline-flex; align-items: center; gap: 5px; color: var(--warm-text); font-weight: 600; border-bottom: 1px solid color-mix(in srgb, var(--warm-text) 45%, transparent); line-height: 1.3; white-space: nowrap; }
+  .ilink:hover { text-decoration: none; border-bottom-color: var(--warm-text); }
+  .ilink svg { width: 16px; height: 16px; flex: none; }
   .tl-item { position: relative; display: flow-root; }
   .tl-item:last-child > article, .tl-item:last-child > div { margin-bottom: 0 !important; }
   .tl-item::before { content: ""; position: absolute; left: -23px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warm) 22%, transparent); }
@@ -95,7 +100,7 @@
       <span ref="{{ mathRef }}" aria-hidden="true" style="position: absolute; display: block; max-width: 100%; width: 330px; height: 96px; opacity: 0; pointer-events: none; z-index: 2"></span>
     </h1>
 
-    <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }}<a class="dl" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ dlHint }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ dlLabel }} &#8599;</a></p>
+    <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }} <a class="ilink" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ dlHint }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ dlLabel }}</a>.</p>
     <div style="margin: 0 0 34px; font-size: 13px">
       <p style="margin: 0 0 6px; opacity: 0.72">{{ meta }}</p>
       <fieldset class="skills"><legend>{{ skillsLabel }}</legend><code>Python</code><code>R</code><code>SQL</code><code>Java</code><span class="sep"></span><code>PyTorch</code><span class="caret" aria-hidden="true"></span></fieldset>
@@ -134,13 +139,13 @@
 
     </section>
     <section class="tl-item">
-    <p class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenThesis }}</span>{{ thesisLabel }}</p>
     <article style="margin: 0 0 26px">
+      <div data-mutter="edu">
+        <h2 class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenEdu }}</span>{{ eduLabel }}</h2>
+        <h3 style="margin: 0 0 8px; font-size: 15px; font-weight: 600; line-height: 1.45">BSc Data Science, Aarhus University</h3>
+      </div>
       <div data-mutter="thesis">
-        <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
-          <a href="thesis/">Development of an AI System for Improving Speaking Skills through Voice Modulation and Tone Practice</a>
-        </h3>
-        <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72"><a href="cv/thesis.pdf">PDF</a></p>
+        <p style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45"><span class="tag">{{ thesisLabel }}</span><a href="thesis/">Development of an AI System for Improving Speaking Skills through Voice Modulation and Tone Practice</a><a class="pdf" href="cv/thesis.pdf">PDF</a></p>
         <p style="margin: 0; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ thesisCopy }}</p>
       </div>
       <div style="display: flex; align-items: center; gap: 18px; margin: 16px 0 0; flex-wrap: wrap">
@@ -160,13 +165,6 @@
       </div>
       </div>
     </article>
-
-    </section>
-    <section class="tl-item">
-    <div data-mutter="edu" style="margin: 0 0 26px">
-      <h2 class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenEdu }}</span>{{ eduLabel }}</h2>
-      <p style="margin: 0; font-size: 15px">BSc Data Science, Aarhus University</p>
-    </div>
     </section>
     <section class="tl-item">
     <article data-mutter="paper" style="margin: 0 0 26px">
@@ -193,8 +191,8 @@ class Component extends DCLogic {
       openLabel: "Open to work",
       themeDark: "Light",
       themeLight: "Dark",
-      intro: "Data science at Aarhus University. I like training deep learning models, whatever the domain. Outside that, fitness and health.",
-      dlLabel: "My training app",
+      intro: "Data science at Aarhus University. I like training deep learning models, whatever the domain. Outside that, fitness and health, with",
+      dlLabel: "my own training app",
       dlHint: "My 7-day machine workout, as an app",
       meta: "Odder, Denmark · Danish native · English C2 · Spanish basic",
       skills: "Python, R, SQL, Java · PyTorch",
@@ -234,8 +232,8 @@ class Component extends DCLogic {
       openLabel: "Disponible para trabajar",
       themeDark: "Claro",
       themeLight: "Oscuro",
-      intro: "Ciencia de datos en la Universidad de Aarhus. Me gusta entrenar modelos de deep learning, sea el dominio que sea. Fuera de eso, fitness y salud.",
-      dlLabel: "Mi app de entrenamiento",
+      intro: "Ciencia de datos en la Universidad de Aarhus. Me gusta entrenar modelos de deep learning, sea el dominio que sea. Fuera de eso, fitness y salud, con",
+      dlLabel: "mi propia app de entrenamiento",
       dlHint: "Mi rutina de 7 días con máquinas, como app",
       meta: "Odder, Dinamarca · danés nativo · inglés C2 · español básico",
       skills: "Python, R, SQL, Java · PyTorch",
@@ -275,8 +273,8 @@ class Component extends DCLogic {
       openLabel: "Åben for arbejde",
       themeDark: "Lys",
       themeLight: "Mørk",
-      intro: "Datavidenskab på Aarhus Universitet. Jeg kan godt lide at træne deep learning-modeller, uanset domænet. Udenfor det, fitness og sundhed.",
-      dlLabel: "Min træningsapp",
+      intro: "Datavidenskab på Aarhus Universitet. Jeg kan godt lide at træne deep learning-modeller, uanset domænet. Udenfor det, fitness og sundhed, med",
+      dlLabel: "min egen træningsapp",
       dlHint: "Min 7-dages maskinrutine som app",
       meta: "Odder, Danmark · dansk indfødt · engelsk C2 · spansk på begynderniveau",
       skills: "Python, R, SQL, Java · PyTorch",
