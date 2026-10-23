@@ -42,6 +42,12 @@
   .contact svg { width: 15px; height: 15px; flex: none; color: var(--warm-text); }
   .contact .arr { color: var(--warm-text); font-size: 12px; }
   .mark { background: color-mix(in srgb, var(--warm-text) 20%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+  .vid { display: block; max-width: 420px; margin: 0 0 14px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; overflow: hidden; background: #000; transition: border-color 0.15s; }
+  .vid:hover { border-color: var(--warm-text); text-decoration: none; }
+  .vid img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; }
+  .vid-cap { display: flex; align-items: center; gap: 7px; padding: 8px 12px; font-size: 13px; font-weight: 600; color: #E6E2D8; background: #0B0A08; border-top: 1px solid rgba(230, 226, 216, 0.14); }
+  .vid-cap svg { width: 14px; height: 14px; flex: none; color: #FFB13D; }
+  .vid-cap .arr { color: #FFB13D; font-size: 12px; margin-left: auto; }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
 
@@ -91,11 +97,17 @@
         <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection">2026 RSNA Knee Abnormality Detection AI Challenge</a>
       </h3>
       <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">{{ rsnaMeta }}</p>
-      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ rsnaTop }}</span> {{ rsnaRank }} <b style="font-weight: 600">{{ rsnaCount }}</b> {{ rsnaTail }}</p>
-      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ rsnaCopy }}</p>
+      <p style="margin: 0 0 4px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ rsnaTop }}</span> {{ rsnaRank }} <b style="font-weight: 600">{{ rsnaCount }}</b> {{ rsnaTail }}</p>
+      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ effTop }}</span> {{ effRank }} <b style="font-weight: 600">{{ effCount }}</b> {{ effTail }}</p>
+      <p style="margin: 0 0 14px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ rsnaCopy }}</p>
+      <a class="vid" href="https://www.youtube.com/watch?v=Rr1IKsQdcrY" aria-label="{{ videoAlt }}">
+        <img src="cv/rsna-video.jpg" alt="{{ videoAlt }}" width="960" height="540" loading="lazy">
+        <span class="vid-cap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>{{ videoLabel }} <span class="arr">&#8599;</span></span>
+      </a>
       <nav style="display: flex; gap: 16px; font-size: 13px; opacity: 0.72">
         <a href="https://www.rsna.org/artificial-intelligence/ai-image-challenge/knee-mri-ai-challenge">RSNA</a>
-        <a href="https://www.kaggle.com/code/ryanholbrook/rsna-knee-abnormalities-efficiency-lb?scriptVersionId=360917682">{{ rsnaRankLink }}</a>
+        <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/leaderboard">{{ rsnaBoardLink }}</a>
+        <a href="https://www.kaggle.com/code/ryanholbrook/rsna-knee-abnormalities-efficiency-lb">{{ rsnaRankLink }}</a>
       </nav>
     </article>
 
@@ -161,10 +173,17 @@ class Component extends DCLogic {
       thesis: "A Wav2Vec2 model that classifies short speech as calm, excited, or authoritative.",
       vm: "The practice site from the thesis.",
       rsna: "Multi-plane knee MRI, twelve findings, labels from multilingual reports.",
-      rsnaTop: "Top 1%",
-      rsnaRank: "on the Efficiency Prize leaderboard:",
-      rsnaCount: "49th of 6,222 teams",
-      rsnaTail: "(public standings, October 2026).",
+      rsnaTop: "Silver medal",
+      rsnaRank: "on the final leaderboard:",
+      rsnaCount: "302nd of 6,425 teams",
+      rsnaTail: "(solo).",
+      effTop: "Top 0.8%",
+      effRank: "on the Efficiency Prize leaderboard:",
+      effCount: "51st of 6,275 teams",
+      effTail: "(public standings).",
+      videoLabel: "3-min explainer video",
+      videoAlt: "Explainer video: how my knee-MRI solution works",
+      rsnaBoardLink: "Final leaderboard",
       pubMeta: "Published in Journal of Imaging, 2025",
       rsnaRankLink: "Efficiency leaderboard",
       edu: "Education",
@@ -174,7 +193,7 @@ class Component extends DCLogic {
       compLabel: "Competition",
       equalAuthor: "Equal author",
       vmMeta: "In progress",
-      rsnaMeta: "Ongoing, 2026",
+      rsnaMeta: "Kaggle, October 2026",
     },
     es: {
       lede: "Busco studentermedhjælper o internship en ingeniería de ML, zona de Aarhus.",
@@ -190,10 +209,17 @@ class Component extends DCLogic {
       thesis: "Un modelo Wav2Vec2 que clasifica habla breve como calm, excited o authoritative.",
       vm: "El sitio de práctica de la tesis.",
       rsna: "RM de rodilla en varios planos, doce hallazgos, etiquetas desde informes multilingües.",
-      rsnaTop: "Top 1 %",
-      rsnaRank: "en la clasificación del Efficiency Prize:",
-      rsnaCount: "puesto 49 de 6.222 equipos",
-      rsnaTail: "(clasificación pública, octubre de 2026).",
+      rsnaTop: "Medalla de plata",
+      rsnaRank: "en la clasificación final:",
+      rsnaCount: "puesto 302 de 6.425 equipos",
+      rsnaTail: "(en solitario).",
+      effTop: "Top 0,8 %",
+      effRank: "en la clasificación del Efficiency Prize:",
+      effCount: "puesto 51 de 6.275 equipos",
+      effTail: "(clasificación pública).",
+      videoLabel: "Vídeo explicativo de 3 min",
+      videoAlt: "Vídeo: cómo funciona mi solución de RM de rodilla",
+      rsnaBoardLink: "Clasificación final",
       pubMeta: "Publicado en Journal of Imaging, 2025",
       rsnaRankLink: "Clasificación de eficiencia",
       edu: "Educación",
@@ -203,7 +229,7 @@ class Component extends DCLogic {
       compLabel: "Competición",
       equalAuthor: "Autoría compartida",
       vmMeta: "En curso",
-      rsnaMeta: "En curso, 2026",
+      rsnaMeta: "Kaggle, octubre de 2026",
     },
     da: {
       lede: "Søger studentermedhjælper eller internship i ML-engineering, pendlingsafstand Aarhus.",
@@ -219,10 +245,17 @@ class Component extends DCLogic {
       thesis: "En Wav2Vec2-model der klassificerer kort tale som calm, excited eller authoritative.",
       vm: "Træningssitet fra bachelorprojektet.",
       rsna: "Knæ-MRI i flere planer, tolv fund, labels fra flersprogede beskrivelser.",
-      rsnaTop: "Top 1 %",
-      rsnaRank: "på Efficiency Prize-ranglisten:",
-      rsnaCount: "nr. 49 af 6.222 hold",
-      rsnaTail: "(offentlig stilling, oktober 2026).",
+      rsnaTop: "Sølvmedalje",
+      rsnaRank: "på den endelige rangliste:",
+      rsnaCount: "nr. 302 af 6.425 hold",
+      rsnaTail: "(solo).",
+      effTop: "Top 0,8 %",
+      effRank: "på Efficiency Prize-ranglisten:",
+      effCount: "nr. 51 af 6.275 hold",
+      effTail: "(offentlig stilling).",
+      videoLabel: "3-min. forklaringsvideo",
+      videoAlt: "Video: sådan virker min knæ-MRI-løsning",
+      rsnaBoardLink: "Endelig rangliste",
       pubMeta: "Udgivet i Journal of Imaging, 2025",
       rsnaRankLink: "Effektivitetsrangliste",
       edu: "Uddannelse",
@@ -232,7 +265,7 @@ class Component extends DCLogic {
       compLabel: "Konkurrence",
       equalAuthor: "Delt forfatterskab",
       vmMeta: "I gang",
-      rsnaMeta: "I gang, 2026",
+      rsnaMeta: "Kaggle, oktober 2026",
     },
   };
 
@@ -406,6 +439,13 @@ class Component extends DCLogic {
       rsnaRank: copy.rsnaRank,
       rsnaCount: copy.rsnaCount,
       rsnaTail: copy.rsnaTail,
+      effTop: copy.effTop,
+      effRank: copy.effRank,
+      effCount: copy.effCount,
+      effTail: copy.effTail,
+      videoLabel: copy.videoLabel,
+      videoAlt: copy.videoAlt,
+      rsnaBoardLink: copy.rsnaBoardLink,
       pubMeta: copy.pubMeta,
       rsnaRankLink: copy.rsnaRankLink,
       eduLabel: copy.edu,
