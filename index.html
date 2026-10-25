@@ -16,8 +16,13 @@
     /* Text-scale amber. --warm is tuned for hairline arrows and the status dot,
        where it is decorative; at 12px it has to clear 4.5:1 on the page ground. */
     --warm-text: #FFB13D;
-    --bg: #000000; --ink: #E6E2D8;
-    /* The Gemma 4 card's thumbnail: a blue-black ground lit from one corner in
+    --bg: #000000; --ink: #DEDAD0;
+    /* Ink in four steps, so rank reads in tone as well as size: titles, body,
+       meta, then dates and tags. The last two still clear 4.5:1 on the ground. */
+    --ink-hi: #FAF7F1; --ink-2: #9C988F; --ink-3: #7F7B74;
+    /* Silver for the silver medal: the one result with a colour of its own. */
+    --silver: #D3D9E1; --silver-bg: rgba(196, 205, 218, 0.15);
+    /* The Gemma 4 box's band: a blue-black ground lit from one corner in
        DeepMind blue. Like the video thumbnail it stays dark on the light theme
        too, so the marks keep their own colours and the Gemma mark's pale end
        still shows. */
@@ -26,7 +31,9 @@
   :root[data-theme="light"] {
     --line: #1D1B17; --run: #000000; --warm: #C06400;
     --warm-text: #8F4A00;
-    --bg: #F3F1EB; --ink: #1D1B17;
+    --bg: #F3F1EB; --ink: #2A2721;
+    --ink-hi: #0E0D0B; --ink-2: #5B5750; --ink-3: #6E6A62;
+    --silver: #4A525D; --silver-bg: rgba(110, 122, 138, 0.17);
   }
   html, body { margin: 0; padding: 0; background: var(--bg); overflow-x: hidden; }
   a { color: var(--ink); text-decoration: none; }
@@ -46,9 +53,29 @@
   .contact a { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 500; }
   .contact svg { width: 15px; height: 15px; flex: none; color: var(--warm-text); }
   .contact .arr { color: var(--warm-text); font-size: 12px; }
-  .mark { background: color-mix(in srgb, var(--warm-text) 20%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
-  .tag { font-size: 12px; font-weight: 600; opacity: 0.55; margin-right: 8px; }
-  .pdf { font-size: 13px; font-weight: 500; opacity: 0.7; margin-left: 8px; white-space: nowrap; }
+  .mark { background: color-mix(in srgb, var(--warm-text) 16%, transparent); color: var(--warm-text); font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+  .mark.silver { background: var(--silver-bg); color: var(--silver); }
+  .medal { display: inline-block; width: 8px; height: 8px; margin: 0 6px 0 1px; border-radius: 50%; vertical-align: 1px; background: linear-gradient(155deg, #F4F6F9 0%, #C6CDD6 48%, #8E98A4 100%); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--silver) 28%, transparent); }
+  .tag { font-size: 12px; font-weight: 600; color: var(--ink-3); margin-right: 8px; }
+  /* Titles one step brighter than the body. */
+  .tl h3, .tl h4, .tl h3 a, .tl h4 a, .tl .hd { color: var(--ink-hi); }
+  .tl h3, .tl h4 { text-wrap: balance; }
+  /* A rank never breaks across lines. */
+  .tl b { white-space: nowrap; }
+  /* Two quiet link forms instead of rows of grey links: a phrase linked where
+     the sentence already names it, and a small "label ↗" beside a title or in
+     a meta line. */
+  .il { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb, currentColor 48%, transparent); text-underline-offset: 0.2em; transition: text-decoration-color 0.15s; }
+  .il:hover { text-decoration-color: var(--warm-text); }
+  .xl { color: var(--ink-2); font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .xl:hover { color: var(--ink); }
+  .xl .arr { color: var(--warm-text); font-size: 12px; }
+  .pdf { margin-left: 8px; }
+  .meta { margin: 0 0 8px; font-size: 13px; line-height: 20px; color: var(--ink-2); }
+  .dot { margin: 0 7px; }
+  /* Kaggle's wordmark in place of the word, cropped to the letters and sized
+     in ems so its baseline sits on the line's in any font. */
+  .kg { display: inline-block; width: 2.6em; height: 1em; vertical-align: -0.2em; }
   .ilink { display: inline-flex; align-items: center; gap: 5px; color: var(--warm-text); font-weight: 600; border-bottom: 1px solid color-mix(in srgb, var(--warm-text) 45%, transparent); line-height: 1.3; white-space: nowrap; }
   .ilink:hover { text-decoration: none; border-bottom-color: var(--warm-text); }
   .ilink svg { width: 16px; height: 16px; flex: none; }
@@ -57,7 +84,7 @@
   .tl-item::before { content: ""; position: absolute; left: -23px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warm) 22%, transparent); }
   .tl-item:not(:last-child)::after { content: ""; position: absolute; left: -20px; top: 16px; bottom: -5px; width: 1px; background: color-mix(in srgb, var(--warm) 38%, transparent); }
   .tl-label { position: relative; }
-  .tl-label .when { position: absolute; right: calc(100% + 38px); top: 0; white-space: nowrap; font-size: 12.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ink); opacity: 0.55; }
+  .tl-label .when { position: absolute; right: calc(100% + 38px); top: 0; white-space: nowrap; font-size: 12.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ink-3); }
   .tl-label .when.now { color: var(--warm-text); font-weight: 700; opacity: 1; }
   /* The entry still running gets the same ring as "open to work". */
   .tl-ring { position: absolute; left: -23px; top: 5px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--warm); box-sizing: border-box; pointer-events: none; animation: openRing 2.2s ease-out infinite; }
@@ -66,73 +93,78 @@
     .tl-item::before { left: -15px; }
     .tl-item:not(:last-child)::after { left: -12px; }
     .tl-label .when { position: static; float: right; margin-left: 12px; }
+  }
+  .vid { display: flex; align-items: center; gap: 14px; width: fit-content; max-width: 100%; margin: 0 0 14px; padding: 6px 16px 6px 6px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; box-sizing: border-box; transition: border-color 0.15s; }
+  .vid:last-child { margin-bottom: 0; }
+  .vid:hover { border-color: var(--warm-text); text-decoration: none; }
+  .vid img { display: block; width: 136px; height: auto; aspect-ratio: 16 / 9; border-radius: 6px; flex: none; background: #000; }
+  .vid-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .vid-cap { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--ink-hi); }
+  .vid-cap svg { width: 13px; height: 13px; flex: none; color: var(--warm-text); }
+  .vid-cap .arr { color: var(--warm-text); font-size: 12px; }
+  .vid-sub { font-size: 12.5px; color: var(--ink-2); }
+  /* After the base rules, which have the same specificity. */
+  @media (max-width: 860px) {
     .vid { gap: 12px; padding-right: 12px; }
     .vid img { width: 104px; }
     .vid-cap { font-size: 13.5px; }
   }
-  .vid { display: flex; align-items: center; gap: 14px; width: fit-content; max-width: 100%; margin: 0 0 14px; padding: 6px 16px 6px 6px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; box-sizing: border-box; transition: border-color 0.15s; }
-  .vid:hover { border-color: var(--warm-text); text-decoration: none; }
-  .vid img { display: block; width: 136px; height: auto; aspect-ratio: 16 / 9; border-radius: 6px; flex: none; background: #000; }
-  .vid-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .vid-cap { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--ink); }
-  .vid-cap svg { width: 13px; height: 13px; flex: none; color: var(--warm-text); }
-  .vid-cap .arr { color: var(--warm-text); font-size: 12px; }
-  .vid-sub { font-size: 12.5px; opacity: 0.65; }
-  /* The Gemma 4 card, a link preview: the host's marks as the thumbnail, the
-     agent's terminal (agent.js) beside it in the page's own ink and amber. */
-  .gx-lb { white-space: nowrap; }
-  .gx-lb .arr { color: var(--warm-text); font-size: 12px; }
-  .gx { display: flex; max-width: 34rem; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; overflow: hidden; background: color-mix(in srgb, var(--ink) 3%, var(--bg)); color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
-  .gx:hover { border-color: var(--warm-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warm) 9%, transparent); text-decoration: none; }
-  .gx-brand { position: relative; flex: none; display: flex; flex-direction: column; justify-content: space-between; width: 180px; padding: 14px 16px 16px; box-sizing: border-box; border-right: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); background: radial-gradient(130% 95% at 0 100%, var(--gx-glow), transparent 72%), var(--gx-ground); color: #E6E2D8; font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 500; line-height: 1.2; white-space: nowrap; }
-  /* Google's four colours, once, as the thumbnail's foot. */
-  .gx-brand::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: linear-gradient(90deg, #4285F4 25%, #EA4335 0 50%, #FBBC05 0 75%, #34A853 0); }
-  .gx-by { display: block; margin: 0 0 7px; font: 700 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.6; }
-  .gx-dm { display: flex; align-items: center; gap: 7px; font-size: 14.5px; letter-spacing: -0.01em; }
-  .gx-dm svg { width: 19px; height: 19px; flex: none; }
-  .gx-gemma { display: flex; align-items: center; gap: 8px; font-size: 16px; letter-spacing: -0.01em; }
-  .gx-gemma svg { width: 28px; height: 28px; flex: none; margin-left: -2px; }
-  .gx-term { display: block; flex: 1; min-width: 0; height: 122px; padding: 11px 14px; box-sizing: border-box; overflow: hidden; font: 500 12px/20px ui-monospace, Consolas, 'Cascadia Mono', monospace; }
+  /* The Gemma 4 entry is one box: the host's band on top with its marks, the
+     title and the facts; Google's four colours as the seam; the agent's
+     terminal (agent.js) below in the page's own ink and amber. The band keeps
+     its own fixed colours on both themes. The title's link stretches over the
+     whole box, and the leaderboard link sits above it. */
+  .gx { position: relative; max-width: 34rem; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--ink) 3%, var(--bg)); transition: border-color 0.15s, box-shadow 0.15s; }
+  .gx:hover { border-color: var(--warm-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warm) 9%, transparent); }
+  .gx-band { display: grid; grid-template-columns: auto minmax(0, 1fr) 38px; column-gap: 16px; align-items: center; padding: 11px 16px 12px; border-radius: 9px 9px 0 0; background: radial-gradient(75% 170% at 0 0, var(--gx-glow), transparent 70%), var(--gx-ground); color: #D9D6CE; }
+  .gx-lb:focus-visible { outline: 2px solid #FFB13D; outline-offset: 3px; border-radius: 3px; }
+  .gx-host { grid-area: 1 / 1; justify-self: start; min-width: 0; display: flex; align-items: center; gap: 7px; margin: 0 0 7px; font: 500 14.5px/20px 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: -0.01em; color: #F4F1EA; white-space: nowrap; }
+  .gx-host svg { width: 18px; height: 18px; flex: none; }
+  .gx-by { margin-right: 2px; font: 700 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #A9AFBA; }
+  .gx-meta { grid-area: 1 / 2 / 2 / 4; justify-self: end; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; gap: 0 12px; margin: 0 0 7px; font-size: 12.5px; line-height: 20px; color: #A9AFBA; white-space: nowrap; }
+  .gx-meta .kg { color: #20BEFF; }
+  .gx-meta .dot { margin: 0 6px; }
+  .gx-lb { position: relative; z-index: 1; color: #E9E6DF; }
+  .gx-band .arr { color: #FFB13D; font-size: 12px; }
+  .gx-title { grid-area: 2 / 1 / 3 / 3; margin: 0; font-size: 15px; font-weight: 600; line-height: 21px; text-wrap: balance; }
+  .tl .gx-title a { color: #FAF7F1; }
+  .gx-title a::after { content: ""; position: absolute; inset: -1px; border-radius: 10px; }
+  .gx-title a:focus-visible { outline: 0; }
+  .gx-title a:focus-visible::after { outline: 2px solid var(--warm-text); outline-offset: 3px; }
+  .gx-desc { grid-area: 3 / 1 / 4 / 3; margin: 3px 0 0; font-size: 14px; line-height: 21px; text-wrap: pretty; }
+  .gx-status { padding: 1px 6px; margin-right: 2px; border-radius: 3px; background: rgba(255, 177, 61, 0.17); color: #FFB13D; font-weight: 600; }
+  .gx-gemma { grid-area: 2 / 3 / 4 / 4; width: 38px; height: 38px; }
+  .gx-term { display: block; height: 114px; padding: 11px 16px 8px; box-sizing: border-box; overflow: hidden; border-radius: 0 0 9px 9px; background: linear-gradient(90deg, #4285F4 25%, #EA4335 0 50%, #FBBC05 0 75%, #34A853 0) top / 100% 2px no-repeat; font: 500 12px/19px ui-monospace, Consolas, 'Cascadia Mono', monospace; }
   .gx-screen { transition: opacity 0.4s; }
   .gx-screen.out { opacity: 0; }
   .gx-row { display: flex; justify-content: space-between; gap: 14px; white-space: pre; visibility: hidden; }
   .gx-row.on { visibility: visible; }
   .gx-main { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .gx-note { flex: none; opacity: 0.65; }
+  .gx-note { flex: none; color: var(--ink-2); }
   /* A command's result sits at the right of its own row, hidden until it lands. */
   .gx-res { flex: none; visibility: hidden; }
   .gx-res.on { visibility: visible; }
   .gx-p, .gx-who, .gx-good { color: var(--warm-text); }
   .gx-who, .gx-good, .gx-bad { font-weight: 700; }
   .gx-spark { width: 11px; height: 11px; margin-right: 6px; vertical-align: -1px; }
-  .gx-del, .gx-add { margin: 0 -14px; padding: 0 14px; }
+  .gx-del, .gx-add { margin: 0 -16px; padding: 0 16px; }
   .gx-del { background: color-mix(in srgb, var(--ink) 6%, transparent); }
-  .gx-del .gx-main { opacity: 0.5; }
+  .gx-del .gx-main { color: var(--ink-2); }
   .gx-add { background: color-mix(in srgb, var(--warm-text) 14%, transparent); color: var(--warm-text); }
-  .gx-ln { display: inline-block; width: 3ch; opacity: 0.45; }
+  .gx-ln { display: inline-block; width: 3ch; color: var(--ink-2); }
   .gx-sign { display: inline-block; width: 2ch; font-weight: 700; }
   .gx-caret { display: inline-block; width: 7px; height: 14px; margin-left: 1px; vertical-align: -2px; background: var(--warm-text); animation: caret 1.06s step-end infinite; }
-  /* Too narrow for a side thumbnail: it becomes a slim bar over the terminal. */
-  @media (max-width: 560px) {
-    .gx { flex-direction: column; }
-    .gx-brand { flex-direction: row; align-items: center; gap: 12px; width: auto; padding: 9px 14px 11px; border-right: 0; background: radial-gradient(60% 220% at 0 0, var(--gx-glow), transparent 75%), var(--gx-ground); }
-    .gx-brand > span:first-child { display: flex; align-items: center; gap: 9px; }
-    .gx-by { margin: 0; font-size: 9.5px; letter-spacing: 0.12em; }
-    .gx-dm { font-size: 14px; }
-    .gx-dm svg { width: 18px; height: 18px; }
-    .gx-gemma { gap: 5px; font-size: 14px; letter-spacing: -0.01em; }
-    .gx-gemma svg { width: 24px; height: 24px; margin: -3px 0; }
-    .gx-term { height: 118px; padding: 9px 14px; }
+  /* Narrow: the Gemma mark moves up beside the host, the facts go last. */
+  @media (max-width: 600px) {
+    .gx-band { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 11px 14px 12px; }
+    .gx-gemma { grid-area: 1 / 2; width: 24px; height: 24px; margin: -2px 0 5px; }
+    .gx-meta { grid-area: 4 / 1 / 5 / 3; justify-self: stretch; justify-content: space-between; flex-wrap: wrap; gap: 0 14px; margin: 6px 0 0; }
+    .gx-term { padding: 11px 14px 9px; }
+    .gx-del, .gx-add { margin: 0 -14px; padding: 0 14px; }
   }
-  /* The host label outranks the Gemma name, which the title already carries: the mark stays. */
   @media (max-width: 400px) {
-    .gx-gn { display: none; }
-  }
-  @media (max-width: 340px) {
-    .gx-brand { gap: 8px; }
-    .gx-brand > span:first-child { gap: 7px; }
-    .gx-by { letter-spacing: 0.06em; }
-    .gx-dm { font-size: 13px; gap: 6px; }
+    .gx-meta { gap: 0 10px; font-size: 12px; }
+    .gx-meta .dot { margin: 0 5px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tl-ring, .gx-caret { animation: none; }
@@ -156,11 +188,11 @@
       </span>
       <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--warm-text); white-space: nowrap">{{ openLabel }}</span>
     </div>
-    <button type="button" onClick="{{ toggleTheme }}" aria-label="{{ themeAria }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: var(--ink); opacity: 0.45">{{ themeLabel }}</button>
+    <button type="button" onClick="{{ toggleTheme }}" aria-label="{{ themeAria }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: var(--ink-3)">{{ themeLabel }}</button>
     <div style="display: flex; gap: 14px">
-    <button type="button" onClick="{{ setEn }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: var(--ink); opacity: {{ enOn }}">en</button>
-    <button type="button" onClick="{{ setEs }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: var(--ink); opacity: {{ esOn }}">es</button>
-    <button type="button" onClick="{{ setDa }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: var(--ink); opacity: {{ daOn }}">da</button>
+    <button type="button" onClick="{{ setEn }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: {{ enOn }}">en</button>
+    <button type="button" onClick="{{ setEs }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: {{ esOn }}">es</button>
+    <button type="button" onClick="{{ setDa }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: {{ daOn }}">da</button>
     </div>
   </div>
 
@@ -171,7 +203,7 @@
 
     <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5; max-width: 42rem; text-wrap: pretty">{{ intro }} <a class="ilink" data-mutter="app" href="https://mikkeltonatiuh.github.io/machine-program/" title="{{ dlHint }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ dlLabel }}</a>.</p>
     <div style="margin: 0 0 34px; font-size: 13px">
-      <p style="margin: 0 0 6px; opacity: 0.72">{{ meta }}</p>
+      <p style="margin: 0 0 6px; color: var(--ink-2)">{{ meta }}</p>
       <fieldset class="skills"><legend>{{ skillsLabel }}</legend><code>Python</code><code>R</code><code>SQL</code><code>Java</code><span class="sep"></span><code>PyTorch</code><span class="caret" aria-hidden="true"></span></fieldset>
       <nav class="contact">
         <a href="mailto:mikkeltcp@hotmail.com"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m3.5 7 8.5 6 8.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>mikkeltcp@hotmail.com</a>
@@ -186,29 +218,27 @@
     <span class="tl-ring" aria-hidden="true"></span>
     <article data-mutter="gemma" style="margin: 0 0 28px">
       <p class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when now">{{ whenGemma }}</span>{{ compLabel }}</p>
-      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
-        <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent">The Gemma 4 Developer Agent Competition</a>
-      </h3>
-      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">Kaggle · {{ gemmaPrize }} <span class="gx-lb">· <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent/leaderboard">{{ gemmaBoardLink }} <span class="arr">&#8599;</span></a></span></p>
-      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ gemmaTop }}</span> {{ gemmaCopy }}</p>
-      <a class="gx" href="https://www.kaggle.com/competitions/gemma-4-developer-agent" aria-label="{{ gemmaAlt }}">
-        <span class="gx-brand" aria-hidden="true">
-          <span><i class="gx-by">{{ gemmaBy }}</i><span class="gx-dm"><svg viewBox="0 0 24 24"><path fill="#4285F4" fill-rule="evenodd" d="M5.988 1.622A8.539 8.539 0 003.45 8.446c.349 4.408 4.506 7.995 8.276 7.995 3.507 0 4.88-3.061 4.541-5.14a4.318 4.318 0 00-.95-2.073c.632.34 1.244.776 1.809 1.3 1.52 1.415 2.44 3.229 2.587 5.1C20.04 19.763 16.98 24 11.863 24c-1.695 0-3.48-.432-4.98-1.143C2.816 20.937 0 16.797 0 12.002 0 7.571 2.405 3.7 5.988 1.622zM12.136 0c1.696 0 3.481.432 4.98 1.143C21.186 3.063 24 7.203 24 11.998c0 4.431-2.405 8.303-5.988 10.38a8.539 8.539 0 002.538-6.824c-.349-4.408-4.506-7.995-8.276-7.995-3.507 0-4.88 3.061-4.541 5.14a4.3 4.3 0 00.953 2.073 8.723 8.723 0 01-1.81-1.3c-1.52-1.415-2.44-3.227-2.589-5.1C3.96 4.237 7.02 0 12.137 0z"/></svg>Google DeepMind</span></span>
-          <span class="gx-gemma"><svg viewBox="0 0 24 24"><defs><linearGradient id="gx-gemma-grad" x1="24.419%" x2="75.194%" y1="75.581%" y2="25.194%"><stop offset="0" stop-color="#446EFF"/><stop offset=".36661" stop-color="#2E96FF"/><stop offset=".83221" stop-color="#B1C5FF"/></linearGradient></defs><path fill="url(#gx-gemma-grad)" fill-rule="evenodd" d="M12.34 5.953a8.233 8.233 0 01-.247-1.125V3.72a8.25 8.25 0 015.562 2.232H12.34zm-.69 0c.113-.373.199-.755.257-1.145V3.72a8.25 8.25 0 00-5.562 2.232h5.304zm-5.433.187h5.373a7.98 7.98 0 01-.267.696 8.41 8.41 0 01-1.76 2.65L6.216 6.14zm-.264-.187H2.977v.187h2.915a8.436 8.436 0 00-2.357 5.767H0v.186h3.535a8.436 8.436 0 002.357 5.767H2.977v.186h2.976v2.977h.187v-2.915a8.436 8.436 0 005.767 2.357V24h.186v-3.535a8.436 8.436 0 005.767-2.357v2.915h.186v-2.977h2.977v-.186h-2.915a8.436 8.436 0 002.357-5.767H24v-.186h-3.535a8.436 8.436 0 00-2.357-5.767h2.915v-.187h-2.977V2.977h-.186v2.915a8.436 8.436 0 00-5.767-2.357V0h-.186v3.535A8.436 8.436 0 006.14 5.892V2.977h-.187v2.976zm6.14 14.326a8.25 8.25 0 005.562-2.233H12.34c-.108.367-.19.743-.247 1.126v1.107zm-.186-1.087a8.015 8.015 0 00-.258-1.146H6.345a8.25 8.25 0 005.562 2.233v-1.087zm-8.186-7.285h1.107a8.23 8.23 0 001.125-.247V6.345a8.25 8.25 0 00-2.232 5.562zm1.087.186H3.72a8.25 8.25 0 002.232 5.562v-5.304a8.012 8.012 0 00-1.145-.258zm15.47-.186a8.25 8.25 0 00-2.232-5.562v5.315c.367.108.743.19 1.126.247h1.107zm-1.086.186c-.39.058-.772.144-1.146.258v5.304a8.25 8.25 0 002.233-5.562h-1.087zm-1.332 5.69V12.41a7.97 7.97 0 00-.696.267 8.409 8.409 0 00-2.65 1.76l3.346 3.346zm0-6.18v-5.45l-.012-.013h-5.451c.076.235.162.468.26.696a8.698 8.698 0 001.819 2.688 8.698 8.698 0 002.688 1.82c.228.097.46.183.696.259zM6.14 17.848V12.41c.235.078.468.167.696.267a8.403 8.403 0 012.688 1.799 8.404 8.404 0 011.799 2.688c.1.228.19.46.267.696H6.152l-.012-.012zm0-6.245V6.326l3.29 3.29a8.716 8.716 0 01-2.594 1.728 8.14 8.14 0 01-.696.259zm6.257 6.257h5.277l-3.29-3.29a8.716 8.716 0 00-1.728 2.594 8.135 8.135 0 00-.259.696zm-2.347-7.81a9.435 9.435 0 01-2.88 1.96 9.14 9.14 0 012.88 1.94 9.14 9.14 0 011.94 2.88 9.435 9.435 0 011.96-2.88 9.14 9.14 0 012.88-1.94 9.435 9.435 0 01-2.88-1.96 9.434 9.434 0 01-1.96-2.88 9.14 9.14 0 01-1.94 2.88z"/></svg><span class="gx-gn">Gemma 4</span></span>
-        </span>
+      <div class="gx">
+        <div class="gx-band">
+          <p class="gx-host"><i class="gx-by">{{ gemmaBy }}</i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" fill-rule="evenodd" d="M5.988 1.622A8.539 8.539 0 003.45 8.446c.349 4.408 4.506 7.995 8.276 7.995 3.507 0 4.88-3.061 4.541-5.14a4.318 4.318 0 00-.95-2.073c.632.34 1.244.776 1.809 1.3 1.52 1.415 2.44 3.229 2.587 5.1C20.04 19.763 16.98 24 11.863 24c-1.695 0-3.48-.432-4.98-1.143C2.816 20.937 0 16.797 0 12.002 0 7.571 2.405 3.7 5.988 1.622zM12.136 0c1.696 0 3.481.432 4.98 1.143C21.186 3.063 24 7.203 24 11.998c0 4.431-2.405 8.303-5.988 10.38a8.539 8.539 0 002.538-6.824c-.349-4.408-4.506-7.995-8.276-7.995-3.507 0-4.88 3.061-4.541 5.14a4.3 4.3 0 00.953 2.073 8.723 8.723 0 01-1.81-1.3c-1.52-1.415-2.44-3.227-2.589-5.1C3.96 4.237 7.02 0 12.137 0z"/></svg>Google DeepMind</p>
+          <h3 class="gx-title"><a href="https://www.kaggle.com/competitions/gemma-4-developer-agent">The Gemma 4 Developer Agent Competition</a></h3>
+          <p class="gx-desc"><span class="gx-status">{{ gemmaTop }}</span> {{ gemmaCopy }}</p>
+          <p class="gx-meta"><span><svg class="kg" viewBox="0 7.35 24 9.3" role="img" aria-label="Kaggle"><path fill="currentColor" d="M.1025 7.3475c-.0681 0-.1022.0341-.1022.102v6.752c0 .0681.034.1022.1022.1022h.7049c.068 0 .1022-.034.1022-.1023v-1.481l.4187-.3985 1.5016 1.91c.041.0477.0884.0716.143.0716h.9091c.0476 0 .0748-.0135.0817-.0407.0135-.041.0066-.075-.0206-.1023l-1.9816-2.4618 1.9002-1.8384c.0204-.0205.0237-.051.01-.092-.0137-.0339-.0408-.051-.0816-.051h-.9398c-.0477 0-.0953.024-.143.0716L.9096 11.607V7.4496c0-.0679-.0342-.102-.1022-.102zm18.0417 0c-.068 0-.102.0341-.102.102v6.752c0 .0681.034.102.102.102h.705c.068 0 .102-.034.102-.102v-6.752c0-.068-.034-.102-.102-.102zM5.961 9.6254c-.5653 0-1.11.1806-1.6343.5415-.0545.0545-.0648.102-.0307.143l.3676.5208c.0272.0477.0717.0545.133.0204.3948-.2722.783-.4086 1.1644-.4086.2927 0 .5158.0886.669.2656.1532.1771.2197.3917.1992.6436-.6606.0681-1.1545.1495-1.4813.245-.8308.2383-1.2461.6913-1.2461 1.3586 0 .4222.1533.7695.4598 1.0419.3132.2654.6845.3982 1.1134.3982.4698 0 .8545-.1125 1.1542-.3372v.1432c0 .0682.0374.102.1123.102h.7048c.068 0 .102-.0338.102-.102V11.372c0-.6604-.2245-1.1406-.6739-1.4403-.3065-.2043-.6776-.3063-1.1134-.3063zm4.3225 0c-.6742 0-1.195.2622-1.5627.7865-.3133.4359-.4699.9671-.4699 1.5936 0 .6604.1634 1.2087.4903 1.6444.3744.4972.892.7455 1.5526.7455.5313 0 .9567-.1327 1.2768-.3982v.531c0 .858-.4122 1.287-1.236 1.287-.361 0-.732-.1907-1.1132-.572a.098.098 0 00-.0716-.0306c-.034 0-.0613.0102-.0817.0307l-.4802.48c-.0408.0613-.0375.1124.0103.1532.1361.1157.2554.2129.3576.2911.102.0783.1905.1413.2656.189.354.1975.7284.2961 1.1235.2961.6808 0 1.207-.1925 1.5781-.577.3711-.3848.5567-.9484.5567-1.6903V9.8196c0-.068-.034-.102-.102-.102h-.705c-.0682 0-.1021.034-.1021.102v.2043c-.3471-.2657-.7763-.3985-1.287-.3985zm4.8021 0c-.6742 0-1.195.2622-1.5627.7865-.3132.4359-.4699.9671-.4699 1.5936 0 .6604.1633 1.2087.4903 1.6444.3744.4972.892.7455 1.5526.7455.5311 0 .9566-.1327 1.2768-.3982v.531c0 .858-.4122 1.287-1.236 1.287-.361 0-.732-.1907-1.1133-.572a.098.098 0 00-.0716-.0306c-.034 0-.0612.0102-.0816.0307l-.48.48c-.0409.0613-.0376.1124.01.1532.1363.1157.2555.2129.3576.2911.1021.0783.1906.1413.2657.189.354.1975.7285.2961 1.1237.2961.6808 0 1.2068-.1925 1.5781-.577.371-.3848.5565-.9484.5565-1.6903V9.8196c0-.068-.034-.102-.102-.102h-.7049c-.0682 0-.1022.034-.1022.102v.2043c-.3474-.2657-.7763-.3985-1.287-.3985zm6.7457 0c-.6537 0-1.185.211-1.5936.6332-.4427.4632-.664 1.0283-.664 1.6956 0 .7083.225 1.2905.6743 1.7467.463.463 1.042.6945 1.7366.6945.6467 0 1.2154-.1838 1.7057-.5515.0545-.041.0545-.0884 0-.143l-.4802-.4903c-.041-.0409-.0919-.0409-.1533 0-.2998.2112-.6368.3167-1.0112.3167-.4222 0-.7729-.119-1.052-.3576-.2452-.2248-.3882-.5038-.429-.8375h3.3197c.0679 0 .1022-.0341.1022-.1023l.01-.2244c.0341-.6878-.1668-1.26-.6025-1.7162-.4224-.4426-.9432-.664-1.5627-.664zm-.0206.7865c.3268 0 .6062.1056.8377.3166.2452.211.371.4734.378.7865h-2.4618c.0613-.3269.2077-.5925.4392-.7968.2313-.2042.5004-.3063.8069-.3063zm-11.4249.102c.6196 0 1.0146.2181 1.1848.6538v1.6854c-.1702.4358-.5755.6538-1.2155.6538-.3133 0-.5687-.0986-.7661-.2963-.2656-.2518-.3983-.6538-.3983-1.2053 0-.9941.3984-1.4914 1.1951-1.4914zm4.802 0c.6196 0 1.0148.2181 1.1851.6538h-.0002v1.6854c-.1703.4358-.5755.6538-1.2155.6538-.3132 0-.5686-.0986-.7661-.2963-.2655-.2518-.3983-.6538-.3983-1.2053 0-.9941.3983-1.4914 1.195-1.4914zm-8.3586 1.6547v1.0215c-.286.286-.6675.412-1.1441.3779-.1703-.0135-.32-.0663-.4493-.1582-.1294-.0919-.2045-.2129-.2249-.3627-.0341-.2657.1158-.47.4495-.6129.2452-.1088.7013-.1974 1.3688-.2656z"/></svg><span class="dot" aria-hidden="true">&#183;</span>{{ gemmaPrize }}</span><a class="gx-lb" href="https://www.kaggle.com/competitions/gemma-4-developer-agent/leaderboard">{{ gemmaBoardLink }} <span class="arr">&#8599;</span></a></p>
+          <svg class="gx-gemma" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="gx-gemma-grad" x1="24.419%" x2="75.194%" y1="75.581%" y2="25.194%"><stop offset="0" stop-color="#446EFF"/><stop offset=".36661" stop-color="#2E96FF"/><stop offset=".83221" stop-color="#B1C5FF"/></linearGradient></defs><path fill="url(#gx-gemma-grad)" fill-rule="evenodd" d="M12.34 5.953a8.233 8.233 0 01-.247-1.125V3.72a8.25 8.25 0 015.562 2.232H12.34zm-.69 0c.113-.373.199-.755.257-1.145V3.72a8.25 8.25 0 00-5.562 2.232h5.304zm-5.433.187h5.373a7.98 7.98 0 01-.267.696 8.41 8.41 0 01-1.76 2.65L6.216 6.14zm-.264-.187H2.977v.187h2.915a8.436 8.436 0 00-2.357 5.767H0v.186h3.535a8.436 8.436 0 002.357 5.767H2.977v.186h2.976v2.977h.187v-2.915a8.436 8.436 0 005.767 2.357V24h.186v-3.535a8.436 8.436 0 005.767-2.357v2.915h.186v-2.977h2.977v-.186h-2.915a8.436 8.436 0 002.357-5.767H24v-.186h-3.535a8.436 8.436 0 00-2.357-5.767h2.915v-.187h-2.977V2.977h-.186v2.915a8.436 8.436 0 00-5.767-2.357V0h-.186v3.535A8.436 8.436 0 006.14 5.892V2.977h-.187v2.976zm6.14 14.326a8.25 8.25 0 005.562-2.233H12.34c-.108.367-.19.743-.247 1.126v1.107zm-.186-1.087a8.015 8.015 0 00-.258-1.146H6.345a8.25 8.25 0 005.562 2.233v-1.087zm-8.186-7.285h1.107a8.23 8.23 0 001.125-.247V6.345a8.25 8.25 0 00-2.232 5.562zm1.087.186H3.72a8.25 8.25 0 002.232 5.562v-5.304a8.012 8.012 0 00-1.145-.258zm15.47-.186a8.25 8.25 0 00-2.232-5.562v5.315c.367.108.743.19 1.126.247h1.107zm-1.086.186c-.39.058-.772.144-1.146.258v5.304a8.25 8.25 0 002.233-5.562h-1.087zm-1.332 5.69V12.41a7.97 7.97 0 00-.696.267 8.409 8.409 0 00-2.65 1.76l3.346 3.346zm0-6.18v-5.45l-.012-.013h-5.451c.076.235.162.468.26.696a8.698 8.698 0 001.819 2.688 8.698 8.698 0 002.688 1.82c.228.097.46.183.696.259zM6.14 17.848V12.41c.235.078.468.167.696.267a8.403 8.403 0 012.688 1.799 8.404 8.404 0 011.799 2.688c.1.228.19.46.267.696H6.152l-.012-.012zm0-6.245V6.326l3.29 3.29a8.716 8.716 0 01-2.594 1.728 8.14 8.14 0 01-.696.259zm6.257 6.257h5.277l-3.29-3.29a8.716 8.716 0 00-1.728 2.594 8.135 8.135 0 00-.259.696zm-2.347-7.81a9.435 9.435 0 01-2.88 1.96 9.14 9.14 0 012.88 1.94 9.14 9.14 0 011.94 2.88 9.435 9.435 0 011.96-2.88 9.14 9.14 0 012.88-1.94 9.435 9.435 0 01-2.88-1.96 9.434 9.434 0 01-1.96-2.88 9.14 9.14 0 01-1.94 2.88z"/></svg>
+        </div>
         <span class="gx-term" ref="{{ agentRef }}" aria-hidden="true"></span>
-      </a>
+      </div>
     </article>
     </section>
     <section class="tl-item">
     <article data-mutter="rsna" style="margin: 0 0 28px">
       <p class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenRsna }}</span>{{ compLabel }}</p>
-      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+      <h3 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; line-height: 1.45">
         <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection">2026 RSNA Knee Abnormality Detection AI Challenge</a>
       </h3>
-      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">{{ rsnaMeta }}</p>
-      <p style="margin: 0 0 4px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ rsnaTop }}</span> {{ rsnaRank }} <b style="font-weight: 600">{{ rsnaCount }}</b> {{ rsnaTail }}</p>
-      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ effTop }}</span> {{ effRank }} <b style="font-weight: 600">{{ effCount }}</b> {{ effTail }}</p>
+      <p class="meta"><svg class="kg" viewBox="0 7.35 24 9.3" role="img" aria-label="Kaggle"><path fill="currentColor" d="M.1025 7.3475c-.0681 0-.1022.0341-.1022.102v6.752c0 .0681.034.1022.1022.1022h.7049c.068 0 .1022-.034.1022-.1023v-1.481l.4187-.3985 1.5016 1.91c.041.0477.0884.0716.143.0716h.9091c.0476 0 .0748-.0135.0817-.0407.0135-.041.0066-.075-.0206-.1023l-1.9816-2.4618 1.9002-1.8384c.0204-.0205.0237-.051.01-.092-.0137-.0339-.0408-.051-.0816-.051h-.9398c-.0477 0-.0953.024-.143.0716L.9096 11.607V7.4496c0-.0679-.0342-.102-.1022-.102zm18.0417 0c-.068 0-.102.0341-.102.102v6.752c0 .0681.034.102.102.102h.705c.068 0 .102-.034.102-.102v-6.752c0-.068-.034-.102-.102-.102zM5.961 9.6254c-.5653 0-1.11.1806-1.6343.5415-.0545.0545-.0648.102-.0307.143l.3676.5208c.0272.0477.0717.0545.133.0204.3948-.2722.783-.4086 1.1644-.4086.2927 0 .5158.0886.669.2656.1532.1771.2197.3917.1992.6436-.6606.0681-1.1545.1495-1.4813.245-.8308.2383-1.2461.6913-1.2461 1.3586 0 .4222.1533.7695.4598 1.0419.3132.2654.6845.3982 1.1134.3982.4698 0 .8545-.1125 1.1542-.3372v.1432c0 .0682.0374.102.1123.102h.7048c.068 0 .102-.0338.102-.102V11.372c0-.6604-.2245-1.1406-.6739-1.4403-.3065-.2043-.6776-.3063-1.1134-.3063zm4.3225 0c-.6742 0-1.195.2622-1.5627.7865-.3133.4359-.4699.9671-.4699 1.5936 0 .6604.1634 1.2087.4903 1.6444.3744.4972.892.7455 1.5526.7455.5313 0 .9567-.1327 1.2768-.3982v.531c0 .858-.4122 1.287-1.236 1.287-.361 0-.732-.1907-1.1132-.572a.098.098 0 00-.0716-.0306c-.034 0-.0613.0102-.0817.0307l-.4802.48c-.0408.0613-.0375.1124.0103.1532.1361.1157.2554.2129.3576.2911.102.0783.1905.1413.2656.189.354.1975.7284.2961 1.1235.2961.6808 0 1.207-.1925 1.5781-.577.3711-.3848.5567-.9484.5567-1.6903V9.8196c0-.068-.034-.102-.102-.102h-.705c-.0682 0-.1021.034-.1021.102v.2043c-.3471-.2657-.7763-.3985-1.287-.3985zm4.8021 0c-.6742 0-1.195.2622-1.5627.7865-.3132.4359-.4699.9671-.4699 1.5936 0 .6604.1633 1.2087.4903 1.6444.3744.4972.892.7455 1.5526.7455.5311 0 .9566-.1327 1.2768-.3982v.531c0 .858-.4122 1.287-1.236 1.287-.361 0-.732-.1907-1.1133-.572a.098.098 0 00-.0716-.0306c-.034 0-.0612.0102-.0816.0307l-.48.48c-.0409.0613-.0376.1124.01.1532.1363.1157.2555.2129.3576.2911.1021.0783.1906.1413.2657.189.354.1975.7285.2961 1.1237.2961.6808 0 1.2068-.1925 1.5781-.577.371-.3848.5565-.9484.5565-1.6903V9.8196c0-.068-.034-.102-.102-.102h-.7049c-.0682 0-.1022.034-.1022.102v.2043c-.3474-.2657-.7763-.3985-1.287-.3985zm6.7457 0c-.6537 0-1.185.211-1.5936.6332-.4427.4632-.664 1.0283-.664 1.6956 0 .7083.225 1.2905.6743 1.7467.463.463 1.042.6945 1.7366.6945.6467 0 1.2154-.1838 1.7057-.5515.0545-.041.0545-.0884 0-.143l-.4802-.4903c-.041-.0409-.0919-.0409-.1533 0-.2998.2112-.6368.3167-1.0112.3167-.4222 0-.7729-.119-1.052-.3576-.2452-.2248-.3882-.5038-.429-.8375h3.3197c.0679 0 .1022-.0341.1022-.1023l.01-.2244c.0341-.6878-.1668-1.26-.6025-1.7162-.4224-.4426-.9432-.664-1.5627-.664zm-.0206.7865c.3268 0 .6062.1056.8377.3166.2452.211.371.4734.378.7865h-2.4618c.0613-.3269.2077-.5925.4392-.7968.2313-.2042.5004-.3063.8069-.3063zm-11.4249.102c.6196 0 1.0146.2181 1.1848.6538v1.6854c-.1702.4358-.5755.6538-1.2155.6538-.3133 0-.5687-.0986-.7661-.2963-.2656-.2518-.3983-.6538-.3983-1.2053 0-.9941.3984-1.4914 1.1951-1.4914zm4.802 0c.6196 0 1.0148.2181 1.1851.6538h-.0002v1.6854c-.1703.4358-.5755.6538-1.2155.6538-.3132 0-.5686-.0986-.7661-.2963-.2655-.2518-.3983-.6538-.3983-1.2053 0-.9941.3983-1.4914 1.195-1.4914zm-8.3586 1.6547v1.0215c-.286.286-.6675.412-1.1441.3779-.1703-.0135-.32-.0663-.4493-.1582-.1294-.0919-.2045-.2129-.2249-.3627-.0341-.2657.1158-.47.4495-.6129.2452-.1088.7013-.1974 1.3688-.2656z"/></svg><span class="dot" aria-hidden="true">&#183;</span><a class="xl" href="https://www.rsna.org/artificial-intelligence/ai-image-challenge/knee-mri-ai-challenge">RSNA <span class="arr">&#8599;</span></a></p>
+      <p style="margin: 0 0 4px; font-size: 15px; max-width: 42rem; text-wrap: pretty"><span class="mark silver"><i class="medal" aria-hidden="true"></i>{{ rsnaTop }}</span> {{ rsnaPre }}<a class="il" href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/leaderboard">{{ rsnaBoardLink }}</a>{{ rsnaPost }} <b style="font-weight: 600">{{ rsnaCount }}</b> {{ rsnaTail }}</p>
+      <p style="margin: 0 0 12px; font-size: 15px; max-width: 42rem; text-wrap: pretty"><span class="mark">{{ effTop }}</span> {{ effPre }}<a class="il" href="https://www.kaggle.com/code/ryanholbrook/rsna-knee-abnormalities-efficiency-lb">{{ effBoardLink }}</a>{{ effPost }} <b style="font-weight: 600">{{ effCount }}</b> {{ effTail }}</p>
       <p style="margin: 0 0 14px; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ rsnaCopy }}</p>
       <a class="vid" href="https://www.youtube.com/watch?v=Rr1IKsQdcrY" aria-label="{{ videoAlt }}">
         <img src="cv/rsna-video.jpg" alt="{{ videoAlt }}" width="960" height="540" loading="lazy">
@@ -217,11 +247,6 @@
           <span class="vid-sub">{{ videoSub }}</span>
         </span>
       </a>
-      <nav style="display: flex; gap: 16px; font-size: 13px; opacity: 0.72">
-        <a href="https://www.rsna.org/artificial-intelligence/ai-image-challenge/knee-mri-ai-challenge">RSNA</a>
-        <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/leaderboard">{{ rsnaBoardLink }}</a>
-        <a href="https://www.kaggle.com/code/ryanholbrook/rsna-knee-abnormalities-efficiency-lb">{{ rsnaRankLink }}</a>
-      </nav>
     </article>
 
     </section>
@@ -232,7 +257,7 @@
         <h3 style="margin: 0 0 8px; font-size: 15px; font-weight: 600; line-height: 1.45">BSc Data Science, Aarhus University</h3>
       </div>
       <div data-mutter="thesis">
-        <p style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45"><span class="tag">{{ thesisLabel }}</span><a href="thesis/">Development of an AI System for Improving Speaking Skills through Voice Modulation and Tone Practice</a><a class="pdf" href="cv/thesis.pdf">PDF</a></p>
+        <p style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45"><span class="tag">{{ thesisLabel }}</span><a class="hd" href="thesis/">Development of an AI System for Improving Speaking Skills through Voice Modulation and Tone Practice</a><a class="xl pdf" href="cv/thesis.pdf">PDF <span class="arr">&#8599;</span></a></p>
         <p style="margin: 0; font-size: 15px; max-width: 34rem; text-wrap: pretty">{{ thesisCopy }}</p>
       </div>
       <div style="display: flex; align-items: center; gap: 18px; margin: 16px 0 0; flex-wrap: wrap">
@@ -241,13 +266,13 @@
           <canvas ref="{{ blopRef }}" width="120" height="120" role="img" aria-label="Blop, idle" style="width: 120px; height: 120px; display: block; pointer-events: none"></canvas>
         </span>
         <a href="Blop.dc.html" aria-label="Open VoiceMaster" style="pointer-events: auto; position: absolute; left: 50%; top: 46%; width: 120px; height: 90px; transform: translate(-50%, -50%); border: 0; padding: 0; margin: 0; background: transparent; cursor: pointer"></a>
-        <p style="position: absolute; left: 50%; top: calc(100% - 2px); transform: translateX(-50%); margin: 0; max-width: 16rem; text-align: center; font-size: 13px; line-height: 1.3; opacity: 0.55; white-space: nowrap; pointer-events: none">{{ mutter }}</p>
+        <p style="position: absolute; left: 50%; top: calc(100% - 2px); transform: translateX(-50%); margin: 0; max-width: 16rem; text-align: center; font-size: 13px; line-height: 1.3; color: var(--ink-3); white-space: nowrap; pointer-events: none">{{ mutter }}</p>
       </div>
       <div data-mutter="vm" style="min-width: 0; flex: 1">
         <h4 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
           <a href="Blop.dc.html">VoiceMaster</a>
         </h4>
-        <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">{{ vmMeta }}</p>
+        <p style="margin: 0 0 8px; font-size: 13px; color: var(--ink-2)">{{ vmMeta }}</p>
         <p style="margin: 0; font-size: 15px; text-wrap: pretty">{{ vmCopy }}</p>
       </div>
       </div>
@@ -288,19 +313,21 @@ class Component extends DCLogic {
       vm: "The practice site from the thesis.",
       rsna: "Multi-plane knee MRI, twelve findings, labels from multilingual reports.",
       rsnaTop: "Silver medal",
-      rsnaRank: "on the final leaderboard:",
+      rsnaPre: "on the ",
+      rsnaBoardLink: "final leaderboard",
+      rsnaPost: ":",
       rsnaCount: "302nd of 6,425 teams",
       rsnaTail: "(solo).",
       effTop: "Top 0.8%",
-      effRank: "on the Efficiency Prize leaderboard:",
+      effPre: "on the ",
+      effBoardLink: "Efficiency Prize leaderboard",
+      effPost: ":",
       effCount: "51st of 6,275 teams",
       effTail: "(public standings).",
       videoLabel: "3-min explainer video",
       videoSub: "How the solution works · YouTube",
       videoAlt: "Explainer video: how my knee-MRI solution works",
-      rsnaBoardLink: "Final leaderboard",
       pubMeta: "Published in Journal of Imaging, 2025",
-      rsnaRankLink: "Efficiency leaderboard",
       edu: "Education",
       pubLabel: "Publication",
       thesisLabel: "Bachelor thesis",
@@ -308,10 +335,8 @@ class Component extends DCLogic {
       compLabel: "Competition",
       equalAuthor: "Equal author",
       vmMeta: "In progress",
-      rsnaMeta: "Kaggle",
       gemmaTop: "In progress",
       gemma: "Post-training Gemma 4 into an offline coding agent.",
-      gemmaAlt: "The competition on Kaggle, hosted by Google DeepMind",
       gemmaPrize: "$100K prize pool",
       gemmaBy: "Hosted by",
       gemmaBoardLink: "Leaderboard",
@@ -336,19 +361,21 @@ class Component extends DCLogic {
       vm: "El sitio de práctica de la tesis.",
       rsna: "RM de rodilla en varios planos, doce hallazgos, etiquetas desde informes multilingües.",
       rsnaTop: "Medalla de plata",
-      rsnaRank: "en la clasificación final:",
+      rsnaPre: "en la ",
+      rsnaBoardLink: "clasificación final",
+      rsnaPost: ":",
       rsnaCount: "puesto 302 de 6.425 equipos",
       rsnaTail: "(en solitario).",
       effTop: "Top 0,8 %",
-      effRank: "en la clasificación del Efficiency Prize:",
+      effPre: "en la ",
+      effBoardLink: "clasificación del Efficiency Prize",
+      effPost: ":",
       effCount: "puesto 51 de 6.275 equipos",
       effTail: "(clasificación pública).",
       videoLabel: "Vídeo explicativo de 3 min",
       videoSub: "Cómo funciona la solución · YouTube",
       videoAlt: "Vídeo: cómo funciona mi solución de RM de rodilla",
-      rsnaBoardLink: "Clasificación final",
       pubMeta: "Publicado en Journal of Imaging, 2025",
-      rsnaRankLink: "Clasificación de eficiencia",
       edu: "Educación",
       pubLabel: "Publicación",
       thesisLabel: "Tesis de grado",
@@ -356,13 +383,11 @@ class Component extends DCLogic {
       compLabel: "Competición",
       equalAuthor: "Autoría compartida",
       vmMeta: "En curso",
-      rsnaMeta: "Kaggle",
       gemmaTop: "En curso",
-      gemma: "Postentrenando Gemma 4 como agente de programación offline.",
-      gemmaAlt: "La competición en Kaggle, organizada por Google DeepMind",
+      gemma: "Postentreno Gemma 4 como agente de código offline.",
       gemmaPrize: "100.000\u00a0$ en premios",
       gemmaBy: "Organiza",
-      gemmaBoardLink: "Clasificación",
+      gemmaBoardLink: "Ranking",
       whenGemma: "Ahora",
       whenRsna: "oct 2026",
       whenThesis: "2026",
@@ -384,19 +409,21 @@ class Component extends DCLogic {
       vm: "Træningssitet fra bachelorprojektet.",
       rsna: "Knæ-MRI i flere planer, tolv fund, labels fra flersprogede beskrivelser.",
       rsnaTop: "Sølvmedalje",
-      rsnaRank: "på den endelige rangliste:",
+      rsnaPre: "på den ",
+      rsnaBoardLink: "endelige rangliste",
+      rsnaPost: ":",
       rsnaCount: "nr. 302 af 6.425 hold",
       rsnaTail: "(solo).",
       effTop: "Top 0,8 %",
-      effRank: "på Efficiency Prize-ranglisten:",
+      effPre: "på ",
+      effBoardLink: "Efficiency Prize-ranglisten",
+      effPost: ":",
       effCount: "nr. 51 af 6.275 hold",
       effTail: "(offentlig stilling).",
       videoLabel: "3-min. forklaringsvideo",
       videoSub: "Sådan virker løsningen · YouTube",
       videoAlt: "Video: sådan virker min knæ-MRI-løsning",
-      rsnaBoardLink: "Endelig rangliste",
       pubMeta: "Udgivet i Journal of Imaging, 2025",
-      rsnaRankLink: "Effektivitetsrangliste",
       edu: "Uddannelse",
       pubLabel: "Publikation",
       thesisLabel: "Bachelorprojekt",
@@ -404,12 +431,10 @@ class Component extends DCLogic {
       compLabel: "Konkurrence",
       equalAuthor: "Delt forfatterskab",
       vmMeta: "I gang",
-      rsnaMeta: "Kaggle",
       gemmaTop: "I gang",
       gemma: "Eftertræner Gemma 4 som offline kodeagent.",
-      gemmaAlt: "Konkurrencen på Kaggle, arrangeret af Google DeepMind",
       gemmaPrize: "100.000\u00a0$ i præmier",
-      gemmaBy: "Vært",
+      gemmaBy: "Arrangør",
       gemmaBoardLink: "Rangliste",
       whenGemma: "Nu",
       whenRsna: "okt. 2026",
@@ -577,7 +602,7 @@ class Component extends DCLogic {
 
   renderVals() {
     const copy = this.COPY[this.state.lang];
-    const on = (id) => (this.state.lang === id ? "1" : "0.4");
+    const on = (id) => (this.state.lang === id ? "var(--ink-hi)" : "var(--ink-3)");
     return {
       intro: copy.intro,
       dlLabel: copy.dlLabel,
@@ -598,19 +623,21 @@ class Component extends DCLogic {
       vmCopy: copy.vm,
       rsnaCopy: copy.rsna,
       rsnaTop: copy.rsnaTop,
-      rsnaRank: copy.rsnaRank,
+      rsnaPre: copy.rsnaPre,
+      rsnaBoardLink: copy.rsnaBoardLink,
+      rsnaPost: copy.rsnaPost,
       rsnaCount: copy.rsnaCount,
       rsnaTail: copy.rsnaTail,
       effTop: copy.effTop,
-      effRank: copy.effRank,
+      effPre: copy.effPre,
+      effBoardLink: copy.effBoardLink,
+      effPost: copy.effPost,
       effCount: copy.effCount,
       effTail: copy.effTail,
       videoLabel: copy.videoLabel,
       videoAlt: copy.videoAlt,
       videoSub: copy.videoSub,
-      rsnaBoardLink: copy.rsnaBoardLink,
       pubMeta: copy.pubMeta,
-      rsnaRankLink: copy.rsnaRankLink,
       eduLabel: copy.edu,
       pubLabel: copy.pubLabel,
       thesisLabel: copy.thesisLabel,
@@ -618,10 +645,8 @@ class Component extends DCLogic {
       compLabel: copy.compLabel,
       equalAuthor: copy.equalAuthor,
       vmMeta: copy.vmMeta,
-      rsnaMeta: copy.rsnaMeta,
       gemmaTop: copy.gemmaTop,
       gemmaCopy: copy.gemma,
-      gemmaAlt: copy.gemmaAlt,
       gemmaPrize: copy.gemmaPrize,
       gemmaBy: copy.gemmaBy,
       gemmaBoardLink: copy.gemmaBoardLink,

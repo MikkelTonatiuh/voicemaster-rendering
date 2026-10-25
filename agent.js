@@ -1,6 +1,6 @@
-/* The terminal in the Gemma 4 card: the suite fails, the agent patches one
+/* The terminal in the Gemma 4 box: the suite fails, the agent patches one
    line, the suite goes green, then it plays again. All five rows are laid out
-   before it plays and only revealed, so the card keeps one height the whole
+   before it plays and only revealed, so the box keeps one height the whole
    time — the contour field behind the page is sized from the content and must
    not see it grow. A command's result lands at the right of its own row. */
 
@@ -82,7 +82,7 @@ export function mountAgent(host) {
     const t = setTimeout(() => { timers.delete(t); done(); }, ms);
     timers.add(t);
   });
-  /* One cycle can finish off screen; the next one waits until the card is
+  /* One cycle can finish off screen; the next one waits until the box is
      back in view, so a scrolled-past page does no work. */
   const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; });
   io.observe(host);
