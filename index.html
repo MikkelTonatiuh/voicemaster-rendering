@@ -53,7 +53,11 @@
   .tl-item:not(:last-child)::after { content: ""; position: absolute; left: -20px; top: 16px; bottom: -5px; width: 1px; background: color-mix(in srgb, var(--warm) 38%, transparent); }
   .tl-label { position: relative; }
   .tl-label .when { position: absolute; right: calc(100% + 38px); top: 0; white-space: nowrap; font-size: 12.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ink); opacity: 0.55; }
+  .tl-label .when.now { color: var(--warm-text); font-weight: 700; opacity: 1; }
+  /* The entry still running gets the same ring as "open to work". */
+  .tl-ring { position: absolute; left: -23px; top: 5px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--warm); box-sizing: border-box; pointer-events: none; animation: openRing 2.2s ease-out infinite; }
   @media (max-width: 860px) {
+    .tl-ring { left: -15px; }
     .tl-item::before { left: -15px; }
     .tl-item:not(:last-child)::after { left: -12px; }
     .tl-label .when { position: static; float: right; margin-left: 12px; }
@@ -69,6 +73,46 @@
   .vid-cap svg { width: 13px; height: 13px; flex: none; color: var(--warm-text); }
   .vid-cap .arr { color: var(--warm-text); font-size: 12px; }
   .vid-sub { font-size: 12.5px; opacity: 0.65; }
+  /* The Gemma 4 card: host bar, the agent's terminal (agent.js), the headline numbers. */
+  .gx { display: block; max-width: 520px; margin: 0 0 14px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; overflow: hidden; background: color-mix(in srgb, var(--ink) 3%, var(--bg)); color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+  .gx:hover { border-color: var(--warm-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warm) 9%, transparent); text-decoration: none; }
+  .gx-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 14px; font-size: 12.5px; font-weight: 600; border-bottom: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); background: radial-gradient(130% 260% at 0 0, color-mix(in srgb, var(--warm) 16%, transparent), transparent 55%); }
+  .gx-name { display: inline-flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gx-name svg { width: 15px; height: 15px; flex: none; color: var(--warm); }
+  .gx-host { display: inline-flex; align-items: center; gap: 7px; flex: none; white-space: nowrap; letter-spacing: -0.005em; }
+  .gx-host i { font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.5; }
+  .gx-term { display: block; height: 184px; padding: 12px 14px; box-sizing: border-box; overflow: hidden; font: 500 12px/20px ui-monospace, Consolas, 'Cascadia Mono', monospace; }
+  .gx-screen { transition: opacity 0.4s; }
+  .gx-screen.out { opacity: 0; }
+  .gx-row { display: flex; justify-content: space-between; gap: 14px; white-space: pre; visibility: hidden; }
+  .gx-row.on { visibility: visible; }
+  .gx-main { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .gx-note { flex: none; opacity: 0.45; }
+  .gx-p, .gx-who, .gx-good { color: var(--warm-text); }
+  .gx-who, .gx-good, .gx-bad { font-weight: 700; }
+  .gx-spark { width: 11px; height: 11px; margin-right: 6px; vertical-align: -1px; }
+  .gx-del, .gx-add { margin: 0 -14px; padding: 0 14px; }
+  .gx-del { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .gx-del .gx-main { opacity: 0.5; }
+  .gx-add { background: color-mix(in srgb, var(--warm-text) 14%, transparent); color: var(--warm-text); }
+  .gx-ln { display: inline-block; width: 3ch; opacity: 0.45; }
+  .gx-sign { display: inline-block; width: 2ch; font-weight: 700; }
+  .gx-caret { display: inline-block; width: 7px; height: 14px; margin-left: 1px; vertical-align: -2px; background: var(--warm-text); animation: caret 1.06s step-end infinite; }
+  .gx-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
+  .gx-stats > span { display: flex; flex-direction: column; gap: 1px; padding: 9px 14px 10px; min-width: 0; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: color-mix(in srgb, var(--ink) 58%, transparent); }
+  .gx-stats > span + span { border-left: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
+  .gx-stats b { font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--warm-text); }
+  @media (max-width: 480px) {
+    .gx-host i { display: none; }
+    .gx-stats > span { padding: 8px 10px 9px; letter-spacing: 0.06em; }
+  }
+  @media (max-width: 360px) {
+    .gx-long { display: none; }
+    .gx-stats > span { padding: 8px 8px 9px; letter-spacing: 0.02em; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tl-ring, .gx-caret { animation: none; }
+  }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
 
@@ -113,6 +157,33 @@
     </div>
 
     <div class="tl">
+    <section class="tl-item">
+    <span class="tl-ring" aria-hidden="true"></span>
+    <article data-mutter="gemma" style="margin: 0 0 28px">
+      <p class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when now">{{ whenGemma }}</span>{{ compLabel }}</p>
+      <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
+        <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent">The Gemma 4 Developer Agent Competition</a>
+      </h3>
+      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">Kaggle · Google DeepMind</p>
+      <p style="margin: 0 0 14px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ gemmaTop }}</span> {{ gemmaCopy }}</p>
+      <a class="gx" href="https://www.kaggle.com/competitions/gemma-4-developer-agent" aria-label="{{ gemmaAlt }}">
+        <span class="gx-bar">
+          <span class="gx-name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c0 5.5 4.5 10 10 10-5.5 0-10 4.5-10 10 0-5.5-4.5-10-10-10 5.5 0 10-4.5 10-10z" fill="currentColor"/></svg><span>Gemma 4<span class="gx-long"> Developer Agent</span></span></span>
+          <span class="gx-host"><i>{{ gemmaBy }}</i>Google DeepMind</span>
+        </span>
+        <span class="gx-term" ref="{{ agentRef }}" aria-hidden="true"></span>
+        <span class="gx-stats">
+          <span><b>$100K</b>{{ gemmaPrize }}</span>
+          <span><b>Gemma 4</b>{{ gemmaModel }}</span>
+          <span><b>Offline</b>{{ gemmaHw }}</span>
+        </span>
+      </a>
+      <nav style="display: flex; gap: 16px; font-size: 13px; opacity: 0.72">
+        <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent/leaderboard">{{ gemmaBoardLink }}</a>
+        <a href="https://deepmind.google/models/gemma/">Gemma</a>
+      </nav>
+    </article>
+    </section>
     <section class="tl-item">
     <article data-mutter="rsna" style="margin: 0 0 28px">
       <p class="tl-label" style="margin: 0 0 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-text)"><span class="when">{{ whenRsna }}</span>{{ compLabel }}</p>
@@ -222,6 +293,15 @@ class Component extends DCLogic {
       equalAuthor: "Equal author",
       vmMeta: "In progress",
       rsnaMeta: "Kaggle",
+      gemmaTop: "In progress",
+      gemma: "Post-training Gemma 4 into a coding agent that runs offline on everyday hardware.",
+      gemmaAlt: "The competition on Kaggle, hosted by Google DeepMind",
+      gemmaBy: "Hosted by",
+      gemmaPrize: "Prize pool",
+      gemmaModel: "Open model",
+      gemmaHw: "Everyday hardware",
+      gemmaBoardLink: "Leaderboard",
+      whenGemma: "Now",
       whenRsna: "Oct 2026",
       whenThesis: "2026",
       whenEdu: "2026",
@@ -263,6 +343,15 @@ class Component extends DCLogic {
       equalAuthor: "Autoría compartida",
       vmMeta: "En curso",
       rsnaMeta: "Kaggle",
+      gemmaTop: "En curso",
+      gemma: "Post-entrenando Gemma 4 para convertirlo en un agente de programación que funciona sin conexión en hardware corriente.",
+      gemmaAlt: "La competición en Kaggle, organizada por Google DeepMind",
+      gemmaBy: "Organiza",
+      gemmaPrize: "En premios",
+      gemmaModel: "Modelo abierto",
+      gemmaHw: "Hardware común",
+      gemmaBoardLink: "Clasificación",
+      whenGemma: "Ahora",
       whenRsna: "oct 2026",
       whenThesis: "2026",
       whenEdu: "2026",
@@ -304,6 +393,15 @@ class Component extends DCLogic {
       equalAuthor: "Delt forfatterskab",
       vmMeta: "I gang",
       rsnaMeta: "Kaggle",
+      gemmaTop: "I gang",
+      gemma: "Eftertræner Gemma 4 til en kodeagent, der kører offline på almindelig hardware.",
+      gemmaAlt: "Konkurrencen på Kaggle, arrangeret af Google DeepMind",
+      gemmaBy: "Vært",
+      gemmaPrize: "Præmiepulje",
+      gemmaModel: "Åben model",
+      gemmaHw: "Almindelig hardware",
+      gemmaBoardLink: "Rangliste",
+      whenGemma: "Nu",
       whenRsna: "okt. 2026",
       whenThesis: "2026",
       whenEdu: "2026",
@@ -339,6 +437,13 @@ class Component extends DCLogic {
       "tap me and we can practice.",
       "the thesis grew a body.",
       "come in. it is quieter than it looks.",
+    ],
+    gemma: [
+      "he is teaching a small model to fix bugs.",
+      "no internet. it has to remember.",
+      "red, then green. that is the whole job.",
+      "a coding agent that fits on one machine.",
+      "the tests decide. not him.",
     ],
     rsna: [
       "so many knees in one place.",
@@ -413,6 +518,10 @@ class Component extends DCLogic {
       const { mountScene } = await import("./scene.js");
       this.scene = mountScene({ fieldSvg: this.topo, nameHost: this.nameHost, mathHost: this.mathHost });
     }
+    if (this.agentHost) {
+      const { mountAgent } = await import("./agent.js");
+      this.agent = mountAgent(this.agentHost);
+    }
     if (this.mathHost) {
       try {
         const { mountMath3D } = await import("./math3d.js");
@@ -453,6 +562,7 @@ class Component extends DCLogic {
     if (this.handle) this.handle.stop();
     if (this.scene) this.scene.destroy();
     if (this.math) this.math.destroy();
+    if (this.agent) this.agent.destroy();
   }
 
   renderVals() {
@@ -499,6 +609,15 @@ class Component extends DCLogic {
       equalAuthor: copy.equalAuthor,
       vmMeta: copy.vmMeta,
       rsnaMeta: copy.rsnaMeta,
+      gemmaTop: copy.gemmaTop,
+      gemmaCopy: copy.gemma,
+      gemmaAlt: copy.gemmaAlt,
+      gemmaBy: copy.gemmaBy,
+      gemmaPrize: copy.gemmaPrize,
+      gemmaModel: copy.gemmaModel,
+      gemmaHw: copy.gemmaHw,
+      gemmaBoardLink: copy.gemmaBoardLink,
+      whenGemma: copy.whenGemma,
       whenRsna: copy.whenRsna,
       whenThesis: copy.whenThesis,
       whenEdu: copy.whenEdu,
@@ -515,6 +634,7 @@ class Component extends DCLogic {
       mathRef: (el) => { this.mathHost = el; },
       rideRef: (el) => { this.ride = el; },
       blopRef: (el) => { this.blop = el; },
+      agentRef: (el) => { this.agentHost = el; },
     };
   }
 }

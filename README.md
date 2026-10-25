@@ -26,6 +26,7 @@ then open http://localhost:8000
 - `valley.js` — the letters of the name as valleys in that field, and the descents that write them
 - `scene.js` — animation timeline, pen strokes, arrows, ripple
 - `math3d.js` — the equation renderer
+- `agent.js` — the terminal in the Gemma 4 card: an agent patches a failing test, on a loop
 - `blop/` — the mascot (WebGL)
 - `support.js` — runtime
 - `Blop.dc.html` — the speaking practice app with Blop the mascot (the avatar on the CV opens it)
