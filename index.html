@@ -9,7 +9,7 @@
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Google+Sans:wght@500&display=swap">
 <style>
   :root {
     --line: #E6E2D8; --run: #ffffff; --warm: #FFB13D;
@@ -17,6 +17,11 @@
        where it is decorative; at 12px it has to clear 4.5:1 on the page ground. */
     --warm-text: #FFB13D;
     --bg: #000000; --ink: #E6E2D8;
+    /* The Gemma 4 card's thumbnail: a blue-black ground lit from one corner in
+       DeepMind blue. Like the video thumbnail it stays dark on the light theme
+       too, so the marks keep their own colours and the Gemma mark's pale end
+       still shows. */
+    --gx-ground: #070C17; --gx-glow: rgba(66, 133, 244, 0.30);
   }
   :root[data-theme="light"] {
     --line: #1D1B17; --run: #000000; --warm: #C06400;
@@ -73,21 +78,30 @@
   .vid-cap svg { width: 13px; height: 13px; flex: none; color: var(--warm-text); }
   .vid-cap .arr { color: var(--warm-text); font-size: 12px; }
   .vid-sub { font-size: 12.5px; opacity: 0.65; }
-  /* The Gemma 4 card: host bar, the agent's terminal (agent.js), the headline numbers. */
-  .gx { display: block; max-width: 520px; margin: 0 0 14px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; overflow: hidden; background: color-mix(in srgb, var(--ink) 3%, var(--bg)); color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+  /* The Gemma 4 card, a link preview: the host's marks as the thumbnail, the
+     agent's terminal (agent.js) beside it in the page's own ink and amber. */
+  .gx-lb { white-space: nowrap; }
+  .gx-lb .arr { color: var(--warm-text); font-size: 12px; }
+  .gx { display: flex; max-width: 34rem; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 10px; overflow: hidden; background: color-mix(in srgb, var(--ink) 3%, var(--bg)); color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
   .gx:hover { border-color: var(--warm-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warm) 9%, transparent); text-decoration: none; }
-  .gx-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 14px; font-size: 12.5px; font-weight: 600; border-bottom: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); background: radial-gradient(130% 260% at 0 0, color-mix(in srgb, var(--warm) 16%, transparent), transparent 55%); }
-  .gx-name { display: inline-flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gx-name svg { width: 15px; height: 15px; flex: none; color: var(--warm); }
-  .gx-host { display: inline-flex; align-items: center; gap: 7px; flex: none; white-space: nowrap; letter-spacing: -0.005em; }
-  .gx-host i { font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.5; }
-  .gx-term { display: block; height: 184px; padding: 12px 14px; box-sizing: border-box; overflow: hidden; font: 500 12px/20px ui-monospace, Consolas, 'Cascadia Mono', monospace; }
+  .gx-brand { position: relative; flex: none; display: flex; flex-direction: column; justify-content: space-between; width: 180px; padding: 14px 16px 16px; box-sizing: border-box; border-right: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); background: radial-gradient(130% 95% at 0 100%, var(--gx-glow), transparent 72%), var(--gx-ground); color: #E6E2D8; font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 500; line-height: 1.2; white-space: nowrap; }
+  /* Google's four colours, once, as the thumbnail's foot. */
+  .gx-brand::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: linear-gradient(90deg, #4285F4 25%, #EA4335 0 50%, #FBBC05 0 75%, #34A853 0); }
+  .gx-by { display: block; margin: 0 0 7px; font: 700 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.6; }
+  .gx-dm { display: flex; align-items: center; gap: 7px; font-size: 14.5px; letter-spacing: -0.01em; }
+  .gx-dm svg { width: 19px; height: 19px; flex: none; }
+  .gx-gemma { display: flex; align-items: center; gap: 8px; font-size: 16px; letter-spacing: -0.01em; }
+  .gx-gemma svg { width: 28px; height: 28px; flex: none; margin-left: -2px; }
+  .gx-term { display: block; flex: 1; min-width: 0; height: 122px; padding: 11px 14px; box-sizing: border-box; overflow: hidden; font: 500 12px/20px ui-monospace, Consolas, 'Cascadia Mono', monospace; }
   .gx-screen { transition: opacity 0.4s; }
   .gx-screen.out { opacity: 0; }
   .gx-row { display: flex; justify-content: space-between; gap: 14px; white-space: pre; visibility: hidden; }
   .gx-row.on { visibility: visible; }
   .gx-main { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .gx-note { flex: none; opacity: 0.45; }
+  .gx-note { flex: none; opacity: 0.65; }
+  /* A command's result sits at the right of its own row, hidden until it lands. */
+  .gx-res { flex: none; visibility: hidden; }
+  .gx-res.on { visibility: visible; }
   .gx-p, .gx-who, .gx-good { color: var(--warm-text); }
   .gx-who, .gx-good, .gx-bad { font-weight: 700; }
   .gx-spark { width: 11px; height: 11px; margin-right: 6px; vertical-align: -1px; }
@@ -98,20 +112,31 @@
   .gx-ln { display: inline-block; width: 3ch; opacity: 0.45; }
   .gx-sign { display: inline-block; width: 2ch; font-weight: 700; }
   .gx-caret { display: inline-block; width: 7px; height: 14px; margin-left: 1px; vertical-align: -2px; background: var(--warm-text); animation: caret 1.06s step-end infinite; }
-  .gx-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
-  .gx-stats > span { display: flex; flex-direction: column; gap: 1px; padding: 9px 14px 10px; min-width: 0; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: color-mix(in srgb, var(--ink) 58%, transparent); }
-  .gx-stats > span + span { border-left: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
-  .gx-stats b { font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--warm-text); }
-  @media (max-width: 480px) {
-    .gx-host i { display: none; }
-    .gx-stats > span { padding: 8px 10px 9px; letter-spacing: 0.06em; }
+  /* Too narrow for a side thumbnail: it becomes a slim bar over the terminal. */
+  @media (max-width: 560px) {
+    .gx { flex-direction: column; }
+    .gx-brand { flex-direction: row; align-items: center; gap: 12px; width: auto; padding: 9px 14px 11px; border-right: 0; background: radial-gradient(60% 220% at 0 0, var(--gx-glow), transparent 75%), var(--gx-ground); }
+    .gx-brand > span:first-child { display: flex; align-items: center; gap: 9px; }
+    .gx-by { margin: 0; font-size: 9.5px; letter-spacing: 0.12em; }
+    .gx-dm { font-size: 14px; }
+    .gx-dm svg { width: 18px; height: 18px; }
+    .gx-gemma { gap: 5px; font-size: 14px; letter-spacing: -0.01em; }
+    .gx-gemma svg { width: 24px; height: 24px; margin: -3px 0; }
+    .gx-term { height: 118px; padding: 9px 14px; }
   }
-  @media (max-width: 360px) {
-    .gx-long { display: none; }
-    .gx-stats > span { padding: 8px 8px 9px; letter-spacing: 0.02em; }
+  /* The host label outranks the Gemma name, which the title already carries: the mark stays. */
+  @media (max-width: 400px) {
+    .gx-gn { display: none; }
+  }
+  @media (max-width: 340px) {
+    .gx-brand { gap: 8px; }
+    .gx-brand > span:first-child { gap: 7px; }
+    .gx-by { letter-spacing: 0.06em; }
+    .gx-dm { font-size: 13px; gap: 6px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tl-ring, .gx-caret { animation: none; }
+    .gx-screen { transition: none; }
   }
   @keyframes openPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.28 } }
   @keyframes openRing { 0% { transform: scale(1); opacity: 0.5 } 70%, 100% { transform: scale(3.2); opacity: 0 } }
@@ -164,24 +189,15 @@
       <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; line-height: 1.45">
         <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent">The Gemma 4 Developer Agent Competition</a>
       </h3>
-      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">Kaggle · Google DeepMind</p>
-      <p style="margin: 0 0 14px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ gemmaTop }}</span> {{ gemmaCopy }}</p>
+      <p style="margin: 0 0 8px; font-size: 13px; opacity: 0.72">Kaggle · {{ gemmaPrize }} <span class="gx-lb">· <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent/leaderboard">{{ gemmaBoardLink }} <span class="arr">&#8599;</span></a></span></p>
+      <p style="margin: 0 0 12px; font-size: 15px; max-width: 34rem; text-wrap: pretty"><span class="mark">{{ gemmaTop }}</span> {{ gemmaCopy }}</p>
       <a class="gx" href="https://www.kaggle.com/competitions/gemma-4-developer-agent" aria-label="{{ gemmaAlt }}">
-        <span class="gx-bar">
-          <span class="gx-name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c0 5.5 4.5 10 10 10-5.5 0-10 4.5-10 10 0-5.5-4.5-10-10-10 5.5 0 10-4.5 10-10z" fill="currentColor"/></svg><span>Gemma 4<span class="gx-long"> Developer Agent</span></span></span>
-          <span class="gx-host"><i>{{ gemmaBy }}</i>Google DeepMind</span>
+        <span class="gx-brand" aria-hidden="true">
+          <span><i class="gx-by">{{ gemmaBy }}</i><span class="gx-dm"><svg viewBox="0 0 24 24"><path fill="#4285F4" fill-rule="evenodd" d="M5.988 1.622A8.539 8.539 0 003.45 8.446c.349 4.408 4.506 7.995 8.276 7.995 3.507 0 4.88-3.061 4.541-5.14a4.318 4.318 0 00-.95-2.073c.632.34 1.244.776 1.809 1.3 1.52 1.415 2.44 3.229 2.587 5.1C20.04 19.763 16.98 24 11.863 24c-1.695 0-3.48-.432-4.98-1.143C2.816 20.937 0 16.797 0 12.002 0 7.571 2.405 3.7 5.988 1.622zM12.136 0c1.696 0 3.481.432 4.98 1.143C21.186 3.063 24 7.203 24 11.998c0 4.431-2.405 8.303-5.988 10.38a8.539 8.539 0 002.538-6.824c-.349-4.408-4.506-7.995-8.276-7.995-3.507 0-4.88 3.061-4.541 5.14a4.3 4.3 0 00.953 2.073 8.723 8.723 0 01-1.81-1.3c-1.52-1.415-2.44-3.227-2.589-5.1C3.96 4.237 7.02 0 12.137 0z"/></svg>Google DeepMind</span></span>
+          <span class="gx-gemma"><svg viewBox="0 0 24 24"><defs><linearGradient id="gx-gemma-grad" x1="24.419%" x2="75.194%" y1="75.581%" y2="25.194%"><stop offset="0" stop-color="#446EFF"/><stop offset=".36661" stop-color="#2E96FF"/><stop offset=".83221" stop-color="#B1C5FF"/></linearGradient></defs><path fill="url(#gx-gemma-grad)" fill-rule="evenodd" d="M12.34 5.953a8.233 8.233 0 01-.247-1.125V3.72a8.25 8.25 0 015.562 2.232H12.34zm-.69 0c.113-.373.199-.755.257-1.145V3.72a8.25 8.25 0 00-5.562 2.232h5.304zm-5.433.187h5.373a7.98 7.98 0 01-.267.696 8.41 8.41 0 01-1.76 2.65L6.216 6.14zm-.264-.187H2.977v.187h2.915a8.436 8.436 0 00-2.357 5.767H0v.186h3.535a8.436 8.436 0 002.357 5.767H2.977v.186h2.976v2.977h.187v-2.915a8.436 8.436 0 005.767 2.357V24h.186v-3.535a8.436 8.436 0 005.767-2.357v2.915h.186v-2.977h2.977v-.186h-2.915a8.436 8.436 0 002.357-5.767H24v-.186h-3.535a8.436 8.436 0 00-2.357-5.767h2.915v-.187h-2.977V2.977h-.186v2.915a8.436 8.436 0 00-5.767-2.357V0h-.186v3.535A8.436 8.436 0 006.14 5.892V2.977h-.187v2.976zm6.14 14.326a8.25 8.25 0 005.562-2.233H12.34c-.108.367-.19.743-.247 1.126v1.107zm-.186-1.087a8.015 8.015 0 00-.258-1.146H6.345a8.25 8.25 0 005.562 2.233v-1.087zm-8.186-7.285h1.107a8.23 8.23 0 001.125-.247V6.345a8.25 8.25 0 00-2.232 5.562zm1.087.186H3.72a8.25 8.25 0 002.232 5.562v-5.304a8.012 8.012 0 00-1.145-.258zm15.47-.186a8.25 8.25 0 00-2.232-5.562v5.315c.367.108.743.19 1.126.247h1.107zm-1.086.186c-.39.058-.772.144-1.146.258v5.304a8.25 8.25 0 002.233-5.562h-1.087zm-1.332 5.69V12.41a7.97 7.97 0 00-.696.267 8.409 8.409 0 00-2.65 1.76l3.346 3.346zm0-6.18v-5.45l-.012-.013h-5.451c.076.235.162.468.26.696a8.698 8.698 0 001.819 2.688 8.698 8.698 0 002.688 1.82c.228.097.46.183.696.259zM6.14 17.848V12.41c.235.078.468.167.696.267a8.403 8.403 0 012.688 1.799 8.404 8.404 0 011.799 2.688c.1.228.19.46.267.696H6.152l-.012-.012zm0-6.245V6.326l3.29 3.29a8.716 8.716 0 01-2.594 1.728 8.14 8.14 0 01-.696.259zm6.257 6.257h5.277l-3.29-3.29a8.716 8.716 0 00-1.728 2.594 8.135 8.135 0 00-.259.696zm-2.347-7.81a9.435 9.435 0 01-2.88 1.96 9.14 9.14 0 012.88 1.94 9.14 9.14 0 011.94 2.88 9.435 9.435 0 011.96-2.88 9.14 9.14 0 012.88-1.94 9.435 9.435 0 01-2.88-1.96 9.434 9.434 0 01-1.96-2.88 9.14 9.14 0 01-1.94 2.88z"/></svg><span class="gx-gn">Gemma 4</span></span>
         </span>
         <span class="gx-term" ref="{{ agentRef }}" aria-hidden="true"></span>
-        <span class="gx-stats">
-          <span><b>$100K</b>{{ gemmaPrize }}</span>
-          <span><b>Gemma 4</b>{{ gemmaModel }}</span>
-          <span><b>Offline</b>{{ gemmaHw }}</span>
-        </span>
       </a>
-      <nav style="display: flex; gap: 16px; font-size: 13px; opacity: 0.72">
-        <a href="https://www.kaggle.com/competitions/gemma-4-developer-agent/leaderboard">{{ gemmaBoardLink }}</a>
-        <a href="https://deepmind.google/models/gemma/">Gemma</a>
-      </nav>
     </article>
     </section>
     <section class="tl-item">
@@ -294,12 +310,10 @@ class Component extends DCLogic {
       vmMeta: "In progress",
       rsnaMeta: "Kaggle",
       gemmaTop: "In progress",
-      gemma: "Post-training Gemma 4 into a coding agent that runs offline on everyday hardware.",
+      gemma: "Post-training Gemma 4 into an offline coding agent.",
       gemmaAlt: "The competition on Kaggle, hosted by Google DeepMind",
+      gemmaPrize: "$100K prize pool",
       gemmaBy: "Hosted by",
-      gemmaPrize: "Prize pool",
-      gemmaModel: "Open model",
-      gemmaHw: "Everyday hardware",
       gemmaBoardLink: "Leaderboard",
       whenGemma: "Now",
       whenRsna: "Oct 2026",
@@ -344,12 +358,10 @@ class Component extends DCLogic {
       vmMeta: "En curso",
       rsnaMeta: "Kaggle",
       gemmaTop: "En curso",
-      gemma: "Post-entrenando Gemma 4 para convertirlo en un agente de programación que funciona sin conexión en hardware corriente.",
+      gemma: "Postentrenando Gemma 4 como agente de programación offline.",
       gemmaAlt: "La competición en Kaggle, organizada por Google DeepMind",
+      gemmaPrize: "100.000\u00a0$ en premios",
       gemmaBy: "Organiza",
-      gemmaPrize: "En premios",
-      gemmaModel: "Modelo abierto",
-      gemmaHw: "Hardware común",
       gemmaBoardLink: "Clasificación",
       whenGemma: "Ahora",
       whenRsna: "oct 2026",
@@ -394,12 +406,10 @@ class Component extends DCLogic {
       vmMeta: "I gang",
       rsnaMeta: "Kaggle",
       gemmaTop: "I gang",
-      gemma: "Eftertræner Gemma 4 til en kodeagent, der kører offline på almindelig hardware.",
+      gemma: "Eftertræner Gemma 4 som offline kodeagent.",
       gemmaAlt: "Konkurrencen på Kaggle, arrangeret af Google DeepMind",
+      gemmaPrize: "100.000\u00a0$ i præmier",
       gemmaBy: "Vært",
-      gemmaPrize: "Præmiepulje",
-      gemmaModel: "Åben model",
-      gemmaHw: "Almindelig hardware",
       gemmaBoardLink: "Rangliste",
       whenGemma: "Nu",
       whenRsna: "okt. 2026",
@@ -612,10 +622,8 @@ class Component extends DCLogic {
       gemmaTop: copy.gemmaTop,
       gemmaCopy: copy.gemma,
       gemmaAlt: copy.gemmaAlt,
-      gemmaBy: copy.gemmaBy,
       gemmaPrize: copy.gemmaPrize,
-      gemmaModel: copy.gemmaModel,
-      gemmaHw: copy.gemmaHw,
+      gemmaBy: copy.gemmaBy,
       gemmaBoardLink: copy.gemmaBoardLink,
       whenGemma: copy.whenGemma,
       whenRsna: copy.whenRsna,

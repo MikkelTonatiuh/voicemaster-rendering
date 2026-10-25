@@ -1,18 +1,15 @@
-/* The terminal in the Gemma 4 card: a test fails, the agent reads the code,
-   patches one line, and the suite goes green, then it plays again. Every row is
-   laid out before it plays and only revealed, so the card keeps one height the
-   whole time — the contour field behind the page is sized from the content and
-   must not see it grow. */
+/* The terminal in the Gemma 4 card: the suite fails, the agent patches one
+   line, the suite goes green, then it plays again. All five rows are laid out
+   before it plays and only revealed, so the card keeps one height the whole
+   time — the contour field behind the page is sized from the content and must
+   not see it grow. A command's result lands at the right of its own row. */
 
 const ROWS = [
-  { cmd: "pytest -q" },
-  { fail: "FAILED test_take", note: "[1] != [1, 2]" },
-  { agent: "patch utils.py" },
+  { cmd: "pytest -q", res: "✗ 1 failed" },
+  { agent: "patch utils.py", note: "offline" },
   { del: "    return items[:n - 1]", ln: "14" },
   { add: "    return items[:n]", ln: "14" },
-  { cmd: "pytest -q" },
-  { ok: "12 passed in 0.31s", note: "offline" },
-  { idle: true },
+  { cmd: "pytest -q", res: "✓ 12 passed", good: true },
 ];
 const SPIN = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
 const SPARK = "M12 2c0 5.5 4.5 10 10 10-5.5 0-10 4.5-10 10 0-5.5-4.5-10-10-10 5.5 0 10-4.5 10-10z";
@@ -40,12 +37,12 @@ function buildRow(r) {
   const row = el("div", "gx-row");
   const main = el("span", "gx-main");
   row.append(main);
-  const out = { row, typed: null, spin: null, verb: null, r };
-  if (r.cmd != null || r.idle) {
+  const out = { row, typed: null, res: null, spin: null, verb: null, r };
+  if (r.cmd != null) {
     out.typed = el("span", "", "");
     main.append(el("span", "gx-p", "$ "), out.typed);
-  } else if (r.fail) {
-    main.append(el("span", "gx-bad", r.fail));
+    out.res = el("span", "gx-res " + (r.good ? "gx-good" : "gx-bad"), r.res);
+    row.append(out.res);
   } else if (r.agent) {
     out.spin = el("span", "gx-p", "");
     out.verb = el("span", "", "");
@@ -54,8 +51,6 @@ function buildRow(r) {
   } else if (r.del || r.add) {
     row.classList.add(r.del ? "gx-del" : "gx-add");
     main.append(el("span", "gx-ln", r.ln), el("span", "gx-sign", r.del ? "-" : "+"), r.del || r.add);
-  } else if (r.ok) {
-    main.append(el("span", "gx-p", "✓ "), el("span", "gx-good", r.ok));
   }
   if (r.note) row.append(el("span", "gx-note", r.note));
   return out;
@@ -70,14 +65,14 @@ export function mountAgent(host) {
   host.append(screen);
 
   const show = (r) => r.row.classList.add("on");
+  const land = (r) => r.res.classList.add("on");
   const settle = (r) => {
-    if (r.typed) r.typed.textContent = r.r.cmd || "";
+    if (r.typed) { r.typed.textContent = r.r.cmd; land(r); }
     if (r.spin) { r.spin.textContent = "▸ "; r.verb.textContent = r.r.agent; }
   };
 
   if (still) {
     for (const r of rows) { settle(r); show(r); }
-    rows[rows.length - 1].row.firstChild.append(caret);
     return { destroy() { screen.remove(); } };
   }
 
@@ -109,21 +104,23 @@ export function mountAgent(host) {
     settle(r);
   };
 
-  const [cmd1, fail, agent, del, add, cmd2, ok, idle] = rows;
+  const [run1, agent, del, add, run2] = rows;
   const play = async () => {
     while (alive) {
       while (alive && (!visible || document.hidden)) await sleep(400);
       for (const r of rows) {
         r.row.classList.remove("on");
         if (r.typed) r.typed.textContent = "";
+        if (r.res) r.res.classList.remove("on");
       }
       screen.classList.remove("out");
-      show(cmd1);
+      show(run1);
+      run1.typed.parentNode.append(caret);
       await sleep(500);
-      await typeInto(cmd1);
-      await sleep(320);
+      await typeInto(run1);
+      await sleep(420);
       caret.remove();
-      show(fail);
+      land(run1);
       await sleep(750);
       show(agent);
       await think(agent, 1400);
@@ -132,15 +129,12 @@ export function mountAgent(host) {
       await sleep(420);
       show(add);
       await sleep(700);
-      show(cmd2);
-      await typeInto(cmd2);
-      await sleep(420);
+      show(run2);
+      await typeInto(run2);
+      await sleep(520);
       caret.remove();
-      show(ok);
-      await sleep(240);
-      show(idle);
-      idle.row.firstChild.append(caret);
-      await sleep(4600);
+      land(run2);
+      await sleep(4800);
       screen.classList.add("out");
       await sleep(420);
     }
