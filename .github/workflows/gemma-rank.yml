@@ -34,10 +34,7 @@ jobs:
           if not hit:
               raise SystemExit(f"team {team!r} not on the leaderboard")
           rank = int(hit[1].get("Rank") or hit[0])
-          i = hit[0] - 1
-          near = [{"rank": int(r.get("Rank") or j + 1), "team": r.get("TeamName", "").strip(), "score": r.get("Score", "").strip()}
-                  for j, r in list(enumerate(rows))[max(0, i - 5):i + 6]]
-          json.dump({"gemma": rank, "team": hit[1]["TeamName"].strip(), "total": len(rows), "near": near}, open("rank.json", "w"))
+          json.dump({"gemma": rank, "team": hit[1]["TeamName"].strip()}, open("rank.json", "w"))
           print("rank", rank)
           PY
       - name: Save it if it changed
