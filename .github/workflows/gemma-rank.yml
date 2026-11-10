@@ -28,7 +28,7 @@ jobs:
           python3 - <<'PY'
           import csv, glob, io, json, os, zipfile
           z = zipfile.ZipFile(glob.glob("lb/*.zip")[0])
-          rows = list(csv.DictReader(io.TextIOWrapper(z.open([n for n in z.namelist() if n.endswith(".csv")][0]), encoding="utf-8")))
+          rows = list(csv.DictReader(io.TextIOWrapper(z.open([n for n in z.namelist() if n.endswith(".csv")][0]), encoding="utf-8-sig")))
           team = os.environ["TEAM"].strip().lower()
           hit = next(((i, r) for i, r in enumerate(rows, 1) if r.get("TeamName", "").strip().lower() == team), None)
           if not hit:
