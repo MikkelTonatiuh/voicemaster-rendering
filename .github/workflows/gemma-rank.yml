@@ -1,0 +1,45 @@
+# Reads the current Gemma 4 leaderboard rank from Kaggle and saves it to rank.json,
+# which the CV shows next to the competition. Needs the repository secrets
+# KAGGLE_USERNAME and KAGGLE_KEY (from kaggle.com > Settings > API > Create New Token)
+# and, if the team name on the leaderboard differs from the Kaggle username, the
+# repository variable KAGGLE_TEAM.
+name: Gemma 4 rank
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  rank:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install --quiet kaggle
+      - name: Download the leaderboard
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: kaggle competitions leaderboard gemma-4-developer-agent --download --path lb
+      - name: Find the rank
+        env:
+          TEAM: ${{ vars.KAGGLE_TEAM || secrets.KAGGLE_USERNAME }}
+        run: |
+          python3 - <<'PY'
+          import csv, glob, io, json, os, zipfile
+          z = zipfile.ZipFile(glob.glob("lb/*.zip")[0])
+          rows = list(csv.DictReader(io.TextIOWrapper(z.open([n for n in z.namelist() if n.endswith(".csv")][0]), encoding="utf-8")))
+          team = os.environ["TEAM"].strip().lower()
+          hit = next(((i, r) for i, r in enumerate(rows, 1) if r.get("TeamName", "").strip().lower() == team), None)
+          if not hit:
+              raise SystemExit(f"team {team!r} not on the leaderboard")
+          rank = int(hit[1].get("Rank") or hit[0])
+          json.dump({"gemma": rank}, open("rank.json", "w"))
+          print("rank", rank)
+          PY
+      - name: Save it if it changed
+        run: |
+          git diff --quiet rank.json && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Update the Gemma 4 rank" && git push

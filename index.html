@@ -295,7 +295,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:1000}}">
 class Component extends DCLogic {
-  state = { lang: "en", mutter: "", theme: "dark" };
+  state = { lang: "en", mutter: "", theme: "dark", gemmaRank: 80 };
 
   COPY = {
     en: {
@@ -340,7 +340,7 @@ class Component extends DCLogic {
       gemma: "Post-training Gemma 4 into an offline coding agent.",
       gemmaPrize: "$100K prize pool",
       gemmaBy: "Hosted by",
-      gemmaBoardLink: "Rank 79",
+      gemmaBoardLink: "Rank {n}",
       whenGemma: "Now",
       whenRsna: "Oct 2026",
       whenThesis: "2026",
@@ -389,7 +389,7 @@ class Component extends DCLogic {
       gemma: "Postentreno Gemma 4 como agente de código offline.",
       gemmaPrize: "100.000\u00a0$ en premios",
       gemmaBy: "Organiza",
-      gemmaBoardLink: "Puesto 79",
+      gemmaBoardLink: "Puesto {n}",
       whenGemma: "Ahora",
       whenRsna: "oct 2026",
       whenThesis: "2026",
@@ -438,7 +438,7 @@ class Component extends DCLogic {
       gemma: "Eftertræner Gemma 4 som offline kodeagent.",
       gemmaPrize: "100.000\u00a0$ i præmier",
       gemmaBy: "Arrangør",
-      gemmaBoardLink: "Nr. 79",
+      gemmaBoardLink: "Nr. {n}",
       whenGemma: "Nu",
       whenRsna: "okt. 2026",
       whenThesis: "2026",
@@ -524,6 +524,11 @@ class Component extends DCLogic {
     }
     document.documentElement.setAttribute("data-theme", t);
     if (t !== this.state.theme) this.setState({ theme: t });
+
+    /* The Gemma 4 rank as the scheduled job last read it from Kaggle (rank.json). */
+    fetch("rank.json", { cache: "no-store" }).then((r) => r.json())
+      .then((d) => { if (Number.isInteger(d.gemma) && d.gemma > 0) this.setState({ gemmaRank: d.gemma }); })
+      .catch(() => {});
 
     const at = (e) => {
       const x = e.clientX, y = e.clientY;
@@ -653,7 +658,7 @@ class Component extends DCLogic {
       gemmaCopy: copy.gemma,
       gemmaPrize: copy.gemmaPrize,
       gemmaBy: copy.gemmaBy,
-      gemmaBoardLink: copy.gemmaBoardLink,
+      gemmaBoardLink: copy.gemmaBoardLink.replace("{n}", this.state.gemmaRank),
       whenGemma: copy.whenGemma,
       whenRsna: copy.whenRsna,
       whenThesis: copy.whenThesis,
