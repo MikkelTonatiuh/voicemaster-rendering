@@ -1,11 +1,14 @@
-/* Runs the analysis on this device (voice/engine.js) instead of the Wav2Vec2 + GAT server, and hands
-   Blop the same payload the server sent, so the board, moods and lines work unchanged.
-   When a line has an example recording, the score is how close the take is to that example. */
-export const STYLES = ["calm", "excited", "authoritative"];
+/* Runs the analysis on this device and hands Blop the board's payload: which words were clear
+   (blop/clarity.js), and how the melody, timing and pauses compare with the line's example
+   (voice/engine.js). If the word check can't run, the board shows the comparison alone. */
+import { PRAISE, clarityNote, clarityTips, summarize } from "./clarity.js";
 
 /* seconds of pitched voice a take needs before it is scored. Short lines like "It's eleven o'clock"
    have only about half a second of it */
 export const MIN_VOICED = 0.4;
+
+/* the word model listens at 16 kHz */
+export const WORD_RATE = 16000;
 
 /* Blop says these when a take can't be scored */
 export const UNHEARD = {
@@ -37,32 +40,46 @@ export async function loadExample(line, VE) {
   const r = await fetch(url);
   if (!r.ok) throw new Error("HTTP " + r.status);
   const { pcm, sr } = await decodeBuffer(await r.arrayBuffer());
-  return { url, analysis: VE.analyze(pcm, sr, { minVoiced: MIN_VOICED }) };
+  return { url, analysis: VE.analyze(pcm, sr, { minVoiced: MIN_VOICED }), pcm, sr };
 }
 
-const BAR_NAMES = { shape: "melody", loudness: "loudness", size: "pitch range", timing: "timing", pauses: "pauses" };
+/* The comparison's loudness and pitch-range bars are left off the board: they move with the room, the
+   microphone and the voice more than with how clear the speech is. */
+const BAR_NAMES = { shape: "melody", timing: "timing", pauses: "pauses" };
 
-export function toPayload(VE, take, target, example) {
-  const judged = VE.judge(take, target);
-  if (!judged.ok) return { unheard: true, copy: UNHEARD[judged.reason] || UNHEARD.none };
-  const probs = {};
-  for (const s of STYLES) probs[s] = (judged.all[s] || 0) / 100;
+/* the take at the word model's rate; a quiet take is raised so it isn't lost in the noise floor */
+export function wordAudio(VE, pcm, sr) {
+  const out = VE.resample(pcm, sr, WORD_RATE);
+  let peak = 0;
+  for (let i = 0; i < out.length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+  if (peak > 0 && peak < 0.2) { const g = 0.5 / peak; for (let i = 0; i < out.length; i += 1) out[i] *= g; }
+  return out;
+}
+
+/* clarity is { words } from the word check, or null when it couldn't run; example is the line's analysed recording */
+export function toPayload(VE, take, example, clarity) {
+  if (!take || !take.ok) return { unheard: true, copy: UNHEARD[take && take.reason] || UNHEARD.none };
   const cmp = example && example.ok ? VE.compare(example, take) : null;
-  const score = cmp ? cmp.score : judged.score;
-  /* close enough = Blop is happy; in between = unsure; far off = Blop shows which tone it heard instead */
-  const ranked = STYLES.slice().sort((p, q) => probs[q] - probs[p]);
-  const heard = ranked[0] === target ? ranked[1] : ranked[0];
-  const mixed = score >= 45 && score < 70;
+  const sum = clarity && clarity.words ? summarize(clarity.words, PRAISE) : null;
+  if (!sum && !cmp) return { unheard: true, copy: UNHEARD.none };
+  const score = sum ? sum.score : cmp.score;
+  const band = sum ? sum.band : score >= 70 ? "good" : score >= 45 ? "mid" : "bad";
+  const tips = sum ? clarityTips(sum) : cmp.tips;
+  const bars = [];
+  if (sum) bars.push({ name: "clarity", value: sum.score / 100 });
+  if (cmp) for (const k of Object.keys(BAR_NAMES)) if (k in cmp.parts) bars.push({ name: BAR_NAMES[k], value: cmp.parts[k] });
   return {
     score,
-    predicted: score >= 70 ? target : heard,
-    mixed,
+    band,
+    mixed: band === "mid",
     confidence: 1,
-    target,
-    probs,
-    headline: cmp ? cmp.headline : judged.headline,
-    feedback: cmp ? cmp.feedback : judged.feedback,
-    tips: cmp ? cmp.tips : judged.tips,
+    headline: sum ? clarityNote(sum) : cmp.headline,
+    feedback: sum ? tips.join(" ") : cmp.feedback,
+    tips,
+    words: sum ? clarity.words : null,
+    wordsNote: sum ? clarityNote(sum) : "",
+    notice: sum ? "" : "word check unavailable · melody and timing only",
+    heard: "",
     prosody: {
       pitchHz: take.pitchHz,
       pitchVariety: take.pitchSd,
@@ -71,8 +88,8 @@ export function toPayload(VE, take, target, example) {
       pausing: take.pauseShare,
       endings: take.endings,
     },
-    /* one bar per part of the comparison, biggest weight first; pauses only when either side paused */
-    bars: cmp ? Object.keys(cmp.parts).map((k) => ({ name: BAR_NAMES[k] || k, value: cmp.parts[k] })) : null,
+    /* clarity first, then one bar per part of the comparison; pauses only when either side paused */
+    bars,
     overlay: cmp ? cmp.overlay : null,
   };
 }

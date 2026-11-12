@@ -1,4 +1,4 @@
-import { emptyBand, liveBand, stepBand, stepCharge, stepVoice } from "./grade.js";
+import { emptyBand, stepBand, stepCharge, stepVoice } from "./grade.js";
 import { emptyAside, pointerFlags, stepAside } from "./line.js";
 import { emptyMix, mixPose, stepMix } from "./mix.js";
 import { blinkAmount, poseFor } from "./pose.js";
@@ -21,8 +21,9 @@ function compile(gl, type, src) {
 }
 
 /* Ported 1:1 from src/components/Blop/Blop.jsx — same springs, uniforms and loop.
-   `read()` returns the live props: {mood, voice, tone, recording, band, target,
-   baseLine, allowAsides, ride, cap, page}. */
+   `read()` returns the live props: {mood, voice, tone, recording, band, live,
+   baseLine, allowAsides, ride, cap, page}. While recording, `live` is the band to show
+   (blop/grade.js, liveBand); after it, `band` is. */
 export function mountBlop(canvas, read) {
   const gl = canvas.getContext("webgl", { antialias: false, alpha: true, premultipliedAlpha: true });
   if (!gl) return { stop() {}, kick() {} };
@@ -55,6 +56,7 @@ export function mountBlop(canvas, read) {
   let last = performance.now(), t0 = last, raf = 0, running = true;
   let lastCap = "", aside = emptyAside(), charge = { charge: 0, band: "rest" };
   let bandState = emptyBand(), voiceEnv = 0, mix = emptyMix();
+  let lastMood = "", moodT = 0;   /* when the current mood began: a pose can play a beginning, then settle */
   let leaveAge = 0, eagerT = -99, wasClose = false, kicks = 0;
   const ptr = { x: 0, y: 0, clientX: null, clientY: null, inside: true };
 
@@ -92,7 +94,7 @@ export function mountBlop(canvas, read) {
       S.sy.kick(-1.8 * kicks); S.hop.kick(0.9 * kicks); wave += 0.03 * kicks; kicks = 0;
     }
     voiceEnv = stepVoice(voiceEnv, p.voice || 0, dt);
-    const raw = p.recording ? liveBand(voiceEnv, p.tone ?? 0.4, p.target || "calm") : p.band || "rest";
+    const raw = p.recording ? p.live || "rest" : p.band || "rest";
     bandState = stepBand(bandState, raw, dt);
     const band = bandState.band;
     charge = stepCharge(charge, band, dt);
@@ -105,6 +107,7 @@ export function mountBlop(canvas, read) {
       x: ptr.clientX, y: ptr.clientY, w: window.innerWidth, h: window.innerHeight,
       cx, cy, inside: ptr.inside, over,
     });
+    if ((p.mood || "idle") !== lastMood) { lastMood = p.mood || "idle"; moodT = T; }
     const home = !!p.allowAsides;
     const leave = home && (flags.edge || !ptr.inside);
     if (leave) leaveAge += dt; else leaveAge = 0;
@@ -116,7 +119,7 @@ export function mountBlop(canvas, read) {
       : stepMix(mix, { leave: false, leaveAge: 0, over: false, eager: false, dt });
     const pose = home
       ? mixPose(T, p.voice || 0, { ...charge, eagerT: Math.max(0, T - eagerT) }, mix)
-      : poseFor(p.mood || "idle", T, p.voice || 0, charge);
+      : poseFor(p.mood || "idle", T, p.voice || 0, { ...charge, mt: T - moodT });
     const leaveW = mix.sad + mix.plead;
     let lookX, lookY;
     if (home && leaveW > 0.2) {

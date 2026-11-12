@@ -259,14 +259,23 @@ var EAGER_KNOTS = [
   { p: 0.72, hop: 0.16, sy: 1.08 },
   { p: 1, hop: 0.02, sy: 1 }
 ];
-var HAPPY_KNOTS = [
+/* A result that went well: one hop when it arrives (a crouch, the jump, a landing, a settle: nothing taller than the
+   frame has room for), then a content rest with a small bounce now and then. */
+var CELEBRATE_KNOTS = [
   { p: 0, hop: 0, sy: 1, lookY: 0.04 },
-  { p: 0.14, hop: 0.02, sy: 0.74, lookY: 0.28 },
-  { p: 0.24, hop: 0.16, sy: 1.18, lookY: -0.2 },
-  { p: 0.48, hop: 0.3, sy: 1.05, lookY: -0.22 },
-  { p: 0.58, hop: 0.02, sy: 0.76, lookY: 0.12 },
-  { p: 0.76, hop: 0.12, sy: 1.07, lookY: -0.08 },
+  { p: 0.16, hop: 0.01, sy: 0.86, lookY: 0.2 },
+  { p: 0.34, hop: 0.1, sy: 1.07, lookY: -0.12 },
+  { p: 0.52, hop: 0.16, sy: 1.03, lookY: -0.16 },
+  { p: 0.68, hop: 0.01, sy: 0.88, lookY: 0.1 },
+  { p: 0.84, hop: 0.045, sy: 1.025, lookY: 0 },
   { p: 1, hop: 0, sy: 1, lookY: 0.04 }
+];
+var BOUNCE_KNOTS = [
+  { p: 0, hop: 0, sy: 1 },
+  { p: 0.25, hop: 0.004, sy: 0.945 },
+  { p: 0.5, hop: 0.07, sy: 1.03 },
+  { p: 0.75, hop: 0, sy: 0.965 },
+  { p: 1, hop: 0, sy: 1 }
 ];
 var BASE = {
   sy: 1,
@@ -371,20 +380,30 @@ var POSE = {
       blinkPeriod: 3.2
     };
   },
-  happy(t) {
-    const k = lerpKnots(HAPPY_KNOTS, t % 1.35 / 1.35);
+  happy(t, _voice, mt = 99) {
+    let hop = 0, sy = 1, lookY = 0.04;
+    if (mt < 1.6) {
+      const k = lerpKnots(CELEBRATE_KNOTS, mt / 1.6);
+      hop = k.hop; sy = k.sy; lookY = k.lookY;
+    } else {
+      const r = mt - 1.6;
+      sy = 1 + Math.sin(r * 1.7) * 0.022;
+      lookY = 0.04 + Math.sin(r * 0.5) * 0.05;
+      const u = (r % 5.5) / 0.9;
+      if (u < 1) { const k = lerpKnots(BOUNCE_KNOTS, u); hop = k.hop; sy = k.sy; }
+    }
     return {
       ...BASE,
-      sy: k.sy,
-      hop: k.hop,
-      lookX: Math.sin(t * 2.1) * 0.12,
-      lookY: k.lookY,
+      sy,
+      hop,
+      lookX: Math.sin(t * 0.6) * 0.1,
+      lookY,
       eye: 1.04,
-      tilt: Math.sin(t * 6) * 0.05,
+      tilt: Math.sin(t * 0.9) * 0.025,
       happy: 1,
       sag: -0.55,
       eyeY: 0.022,
-      blinkPeriod: 99
+      blinkPeriod: 3.4
     };
   },
   frustrated(t) {
@@ -423,7 +442,7 @@ var POSE = {
 };
 export function poseFor(mood, t, voice = 0, extras = {}) {
   const fn = POSE[mood] || POSE.idle;
-  const pose = fn(t, voice);
+  const pose = fn(t, voice, extras.mt);
   const charge = Math.min(1, Math.max(0, extras.charge || 0));
   const band = extras.band || "rest";
   if (band === "good") {

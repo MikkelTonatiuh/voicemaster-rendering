@@ -1,3 +1,5 @@
+import { LIVE, summarize } from "./clarity.js";
+
 export const REST_TINT = [0.97, 0.98, 0.99];
 export const DWELL = 0.16;
 export const HOLD_SEC = DWELL;
@@ -9,28 +11,29 @@ export const TINTS = {
   bad: [0.98, 0.68, 0.66],
 };
 
-export function liveBand(voice, tone = 0.4, target = "calm") {
-  const v = Math.min(1, Math.max(0, Number(voice) || 0));
-  const tn = Math.min(1, Math.max(0, Number(tone) || 0));
-  if (v < 0.08) return "bad";
-  if (target === "excited") {
-    if (v >= 0.32) return "good";
-    if (v >= 0.16) return "mid";
-    return "bad";
-  }
-  if (target === "calm") {
-    if (v >= 0.1 && v <= 0.38 && tn < 0.72) return "good";
-    if (v >= 0.08 && v <= 0.55) return "mid";
-    return "bad";
-  }
-  if (target === "authoritative") {
-    if (v >= 0.18 && v <= 0.55) return "good";
-    if (v >= 0.12 && v <= 0.7) return "mid";
-    return "bad";
-  }
-  if (v >= 0.18 && v <= 0.55) return "good";
-  if (v >= 0.1 && v <= 0.7) return "mid";
-  return "bad";
+/* While you speak, Blop shows how the words scored so far are going: the word check scores the first words of the
+   line as soon as they have been said (blop/clarity.js, wordsReached), so what Blop shows comes from the same
+   scoring as the result. "good" when they are clear, "mid" when some were hard to hear; never "bad", that is for the
+   result. Until two words can be judged it only listens. A last word or two that the model can't find in the audio
+   at all (below cfg.unsaid) were most likely not said yet, and are left out. How loud the voice is says nothing about
+   this: an earlier version judged the loudness, and showed an angry or confused Blop during takes that then scored
+   90 and more. */
+export function liveBand(words, cfg = LIVE) {
+  if (!Array.isArray(words)) return "rest";
+  let n = words.length;
+  while (n > 0 && words.length - n < 2 && words[n - 1].s < cfg.unsaid) n -= 1;
+  if (n < cfg.min) return "rest";
+  return summarize(words.slice(0, n)).band === "good" ? "good" : "mid";
+}
+
+/* One reading that finds trouble can be the model's noise: on 61 learner takes of 14 to 30 words, a lone one showed
+   on 2 of the 30 that ended clear, and none did when two in a row were needed. So Blop shows "mid" once two readings
+   in a row say so; a clear reading shows at once, and a reading that says nothing (rest) leaves things as they are.
+   shown is what Blop shows now, prev the reading before this one, read this one. */
+export function showLive(shown, prev, read) {
+  if (read === "good") return "good";
+  if (read === "mid" && prev === "mid") return "mid";
+  return shown || "rest";
 }
 
 export function stepVoice(prev, raw, dt) {
@@ -76,24 +79,20 @@ export function tintFor(band, charge = 0) {
   return REST_TINT.map((c, i) => c + (dest[i] - c) * u);
 }
 
-const SIM_CENTRE = { calm: 0.24, excited: 0.44, authoritative: 0.36 };
-
-export function simulatedVoice(t, target = "calm") {
-  const centre = SIM_CENTRE[target] || 0.3;
+export function simulatedVoice(t) {
   const drift = Math.sin(t * 0.31) * 0.055 + Math.sin(t * 0.73 + 1.1) * 0.03;
   const syllable = Math.abs(Math.sin(t * 4.1)) * 0.04;
-  return Math.max(0, Math.min(1, centre + drift + syllable));
+  return Math.max(0, Math.min(1, 0.3 + drift + syllable));
 }
 
-export function simulatedTone(t, target = "calm") {
-  const centre = target === "excited" ? 0.62 : 0.42;
-  return Math.max(0, Math.min(1, centre + Math.sin(t * 0.27) * 0.06));
+export function simulatedTone(t) {
+  return Math.max(0, Math.min(1, 0.42 + Math.sin(t * 0.27) * 0.06));
 }
 
 export function scoreBand(view, results) {
   if (view !== "good" && view !== "unsure") return null;
+  if (results?.band) return results.band;
   const score = Number(results?.score) || 0;
-  if (results?.mixed) return "mid";
   if (score >= 72) return "good";
   if (score >= 45) return "mid";
   return "bad";

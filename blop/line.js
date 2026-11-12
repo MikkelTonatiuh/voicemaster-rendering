@@ -1,9 +1,10 @@
+import { clarityNote, clarityTips, levelOf, summarize } from "./clarity.js";
+
 export const INTRO = "practice how you sound.";
 export const TAP = "tap me.";
 export const FAR = "where you going";
 export const EDGE = "please don't leave.";
 export const LEAVE = "don't leave";
-export const TONES = ["calm", "excited", "authoritative"];
 
 export function pointerFlags({
   x = 0,
@@ -73,104 +74,51 @@ export function coachingText(results) {
   return blopVoice(bits.join(" "));
 }
 
-export function noteFor(results, target) {
-  if (!results) return "";
-  const predicted = results.predicted || results.emotion || results.style || "";
-  const heard = predicted ? String(predicted).toLowerCase() : "";
-  const tgt = String(target || results.target || results.targetEmotion || "").toLowerCase();
-  const body = coachingText(results);
-  if (body) {
-    if (heard && !body.includes(heard)) return blopVoice(`that read as ${heard}. ${body}`);
-    return body;
-  }
-  if (results.mixed) {
-    return blopVoice(
-      `that mixed ${tgt || "the ask"} with another tone. pick one and hold the pace to the last word.`,
-    );
-  }
-  if (heard && tgt && heard !== tgt) {
-    return `that read as ${heard}, not ${tgt}. slow the pace and settle the intonation on the last beat.`;
-  }
-  if (heard) {
-    return `that read as ${heard}. keep the volume even and land the last word a little quieter.`;
-  }
-  return "the tone never locked. try again a little slower and finish the last word.";
-}
-
-export function simulateResult(target) {
-  const e = String(target || "calm").toLowerCase();
-  const feedback =
-    e === "excited"
-      ? `that read as ${e}. energy is there, but the pitch still settles too soon. punch the first stress and keep the brightness through the last word.`
-      : e === "authoritative"
-        ? `that read as ${e}. it is a bit light. ground the voice, cut the hedging pauses, and finish like you mean it.`
-        : `that read as ${e}. the pace is even. let the pauses sit half a beat longer and land the last word more quietly so the intonation does not rush off.`;
-  const probs =
-    e === "excited"
-      ? { calm: 0.16, excited: 0.66, authoritative: 0.18 }
-      : e === "authoritative"
-        ? { calm: 0.18, excited: 0.2, authoritative: 0.62 }
-        : { calm: 0.64, excited: 0.22, authoritative: 0.14 };
+/* a made-up read of the line for "Continue without a microphone": the longest word comes out a little soft */
+export function simulateResult(text) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  if (!words.length) words.push("hello");
+  const soft = words.reduce((best, w, i) => (w.length > words[best].length ? i : best), 0);
+  const scored = words.map((w, i) => {
+    const s = i === soft ? -3.4 : -0.3;
+    return { w, s, level: levelOf(w, s) };
+  });
+  const sum = summarize(scored);
+  const tips = clarityTips(sum);
   return {
-    mixed: false,
-    score: Math.round(probs[e] * 100),
-    predicted: e,
-    target: e,
-    headline: `you hit ${e}`,
-    feedback,
-    tips: ["keep the volume even through the last beat."],
-    probs,
-    probabilities: TONES.map((name) => ({ label: name, value: probs[name] })),
+    score: sum.score,
+    band: sum.band,
+    mixed: sum.band === "mid",
+    confidence: 1,
+    headline: clarityNote(sum),
+    feedback: tips.join(" "),
+    tips,
+    words: scored,
+    wordsNote: clarityNote(sum),
+    notice: "",
+    heard: "",
+    prosody: null,
+    bars: [{ name: "clarity", value: sum.score / 100 }],
+    overlay: null,
   };
 }
 
-export function toneBars(results) {
-  const src = results?.probs || {};
-  const list = results?.probabilities;
-  const bars = TONES.map((name) => {
-    let v = Number(src[name]);
-    if (!Number.isFinite(v) && Array.isArray(list)) {
-      const hit = list.find((p) => p.label === name);
-      v = Number(hit?.value);
-    }
-    if (!Number.isFinite(v)) v = 0;
-    return { name, value: Math.min(1, Math.max(0, v)) };
-  });
-  if (bars.every((b) => b.value === 0) && results?.predicted) {
-    const hit = String(results.predicted).toLowerCase();
-    return TONES.map((name) => ({ name, value: name === hit ? 0.7 : 0.15 }));
-  }
-  return bars;
-}
-
-export function tryNote(results, target) {
+export function tryNote(results) {
   if (results?.tips?.[0]) return blopVoice(results.tips[0]);
   const body = coachingText(results);
   if (body) {
     const parts = body.split(/\. /).filter(Boolean);
     return blopVoice(parts[parts.length - 1] || body);
   }
-  return noteFor(results, target);
+  return "try that one again.";
 }
 
-const TONE_CUE = {
-  calm: "say it calmly",
-  excited: "say it with excitement",
-  authoritative: "say it with authority",
-};
-
-export function toneCue(target) {
-  const key = String(target || "").toLowerCase();
-  return TONE_CUE[key] || `say it ${key || "naturally"}`;
-}
-
-export function baseLine({ view, recording, intro, prompt, results, errorCopy } = {}) {
+export function baseLine({ view, recording, intro, prompt, results, errorCopy, loadNote } = {}) {
   if (view === "home") return intro ? INTRO : TAP;
   if (view === "rec") return prompt?.t || TAP;
-  if (view === "cue") return toneCue(prompt?.e);
-  if (view === "load") return "hold on.";
+  if (view === "load") return loadNote || "hold on.";
   if (view === "err") return errorCopy || "that didn't work.";
-  if (view === "good" || view === "unsure") return tryNote(results, prompt?.e);
+  if (view === "good" || view === "unsure") return tryNote(results);
   return TAP;
 }
 
