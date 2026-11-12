@@ -2,8 +2,8 @@
 
    For every sentence and tone it ranks the clips by how clearly listeners heard the intended emotion from
    the voice alone (CREMA-D's crowd ratings), downloads the best few, measures them with voice/engine.js and
-   keeps the one that is clean, easy to pitch-track and fits the tone. It writes voice/models/<id>.mp3 and
-   voice/models/lines.json, which Blop reads.
+   keeps the one that is clean, easy to pitch-track and fits the tone. It writes voice/models/<id>.mp3 and, unless
+   voice/models/lines.json already holds the AI-voice lines (see the end of the file), lines.json, which Blop reads.
 
    With --calibrate it then plays the real test: other actors' takes of the same sentence are scored against
    each example. Takes in the example's emotion should score higher than takes in the other two.
@@ -257,8 +257,17 @@ for (const { tone, sentence, cands } of plan) {
   });
   console.log(id.padEnd(20) + best.c.name.padEnd(18) + (who.sex || "").padEnd(8) + best.c.heard.label);
 }
-fs.writeFileSync(path.join(OUT, "lines.json"), "[\n" + lines.map((l) => "  " + JSON.stringify(l)).join(",\n") + "\n]\n");
-console.log("wrote " + lines.length + " lines to voice/models/lines.json");
+/* lines.json also holds the AI-voice lines and their word times, which the app plays first: a run leaves it alone
+   then, unless it is asked to replace it (--write-lines) */
+const linesFile = path.join(OUT, "lines.json");
+let kept = [];
+try { kept = JSON.parse(fs.readFileSync(linesFile, "utf8")).filter((l) => l && l.ai); } catch { /* no file yet */ }
+if (kept.length && !process.argv.includes("--write-lines")) {
+  console.log("voice/models/lines.json has " + kept.length + " AI-voice lines: left as it is (--write-lines replaces it with these " + lines.length + ")");
+} else {
+  fs.writeFileSync(linesFile, "[\n" + lines.map((l) => "  " + JSON.stringify(l)).join(",\n") + "\n]\n");
+  console.log("wrote " + lines.length + " lines to voice/models/lines.json");
+}
 
 /* ---------- the real test: other actors' takes against each example ---------- */
 if (process.argv.includes("--calibrate")) {

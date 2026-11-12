@@ -5,9 +5,25 @@ There are two sets of example lines.
 ## AI voice (what Blop plays)
 
 The `liora-NN` clips are synthetic speech made with xAI's text-to-speech API (the voice Liora), not recordings of a
-person. The page doesn't label them; this file and the README say what they are. Under xAI's Enterprise Terms of Service (last updated 27 October 2026)
-the customer owns the output, may not use it to train AI models and may not present it as human-generated.
-`lines.json` marks them with `ai` and says which tone each was asked for.
+person. They are the files the service returned, unchanged. `lines.json` marks them with `ai` and says which tone
+each was asked for. The page doesn't label them; this file and the README say what they are.
+
+The terms on x.ai are those of SpaceX Super Intelligence LLC ("SpaceXSI"). What they say about this output, official
+(source: the pages linked, read 12 November 2026):
+
+- Which terms: the consumer terms (https://x.ai/legal/terms-of-service, last updated 27 October 2026) say "Our
+  Enterprise Terms of Service govern the use of our Services for developers and businesses, including SpaceXSI APIs
+  and PromptIDE." These clips were made through the API.
+- Terms of Service, Enterprise (https://x.ai/legal/terms-of-service-enterprise, last updated 27 October 2026):
+  SpaceXSI "hereby assigns to Customer all of its right, title, and interest in such Output"; "Customer will not, and
+  will not permit any third party to: (i) use any Output to train any foundation models, large language models, or
+  other artificial intelligence systems except as may be expressly permitted in an Order Form; or (ii) misrepresent
+  that any Output was human-generated."; and "Customer will comply with SpaceXSI’s Acceptable Use Policy".
+- Acceptable Use Policy (https://x.ai/legal/acceptable-use-policy, effective 14 August 2026), under "Comply with the
+  law": "Misleading others or not being transparent regarding your use of AI, including by phishing, creating fake
+  accounts, providing services that appear to be from you, when they are in fact from SpaceXSI, or providing services
+  that appear to originate from SpaceXSI, when they do not", and "Stripping, altering or circumventing embedded
+  provenance metadata or watermarks".
 
 ## CREMA-D (fallback)
 
@@ -21,6 +37,6 @@ CREMA-D is made available under the Open Database License
 are licensed under the Database Contents License (http://opendatacommons.org/licenses/dbcl/1.0/).
 
 The clips here were trimmed, level-adjusted and converted to MP3 by `tools/crema-d-examples.mjs`.
-Only the neutral readings are used, one per sentence, as the voice Blop says each line in.
+Only the neutral readings are kept, one per sentence. Blop plays them only when `lines.json` has no AI-voice lines.
 `lines.json` names the original CREMA-D clip behind each file and how many of CREMA-D's listeners
 heard it as neutral.

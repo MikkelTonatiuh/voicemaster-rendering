@@ -75,7 +75,7 @@ name more slowly, and that with the valleys' gradient switched off nothing is wr
 
 ## Practice loop
 
-Blop says a practice line first, in a real voice, moving with the sound. When it has finished, the mic opens
+Blop says a practice line first, in an AI voice, moving with the sound. When it has finished, the mic opens
 by itself and Blop listens: there is no record button, no stop button and no countdown. Once the user has said
 the line and gone quiet, Blop looks thoughtful and the take ends by itself (see "When the take is over").
 Then the result board replays the take. It has the clarity score, the sentence with the words that were hard
@@ -84,7 +84,8 @@ pitch as a glowing line against the example's as a wide quiet ribbon, both in se
 usual pitch, so a deep voice can follow a high one by shape. The two are laid on the example's timeline word by word:
 each word of the take sits under the same word of the example however fast or slow it was said, and both lines begin
 together. A line under the melody says how long the take took against the example when it differs by a quarter or more
-(speed is not part of the score). As the board
+(speed is not part of the word score; on a first visit, while the word check is still arriving, the number is the melody
+and timing comparison, which does count it, and the board says so under the number). As the board
 arrives a silent sweep runs once over the sentence, lighting the words and drawing the melody; the play button then
 plays the take, or the example with the switch next to it (its colour dots are the key to the two lines), and the
 words and the melody follow the sound. A tap on a word plays that word, a tap on the melody plays from there. Try
@@ -97,7 +98,9 @@ angry Blop during takes that then scored 90. For the first two tries of a line t
 melody is drawn under the line while the user speaks, then it is hidden. A tap on Blop while it listens ends the
 take at once; a tap while it is speaking skips to listening. A tap on the line gives another line at any point: before
 Blop has said it, while it does, or while the take is running (a double tap counts once); so does a quick double tap
-on Blop as the take starts. A line doesn't come back until three quarters of the others have been shown, also after
+on Blop while it says the line. A tap on Blop just after a take has ended by itself doesn't throw the result away: it
+was most likely meant to end the take. If the tab is hidden or the phone locked during a round, the round stops, the
+microphone is let go and Blop is home again; a tap on it says the line. A line doesn't come back until three quarters of the others have been shown, also after
 the page is reloaded (the last lines shown are kept in the browser). This
 follows the research on pronunciation training: model voices, specific feedback after each try, and guidance
 that fades out.
@@ -105,9 +108,9 @@ that fades out.
 - **Which word was hard to hear** (`blop/clarity.js`, `blop/clarity.worker.js`). Whisper tiny.en is given the
   line the user was meant to say and asked how likely each word is given what it heard; a low score means a
   listener would struggle with the word. It runs on the device in a worker, so Blop keeps moving. The
-  model is about 40 MB, comes from Hugging Face the first time and is cached by the browser; the library and the
-  runtime come from jsDelivr. The recording is never uploaded. If the model can't load (offline), the board
-  shows the melody and timing comparison alone and says so. On the first visit the download takes a while (43 s
+  model is about 43 MB, comes from Hugging Face the first time and is cached by the browser; the library and the
+  runtime come from jsDelivr (the runtime is about 5 MB as sent, 27 MB unpacked). The recording is never uploaded. If the model can't load (offline), the board
+  shows the melody and timing comparison alone and says so. On the first visit the download takes a while (the model took 43 s
   here, at 0.9 MB/s), so the board comes up at once with the melody and timing, says the word check is on its way,
   and adds the words when the model has arrived.
 - How well it works, on 1,220 sentences read by adult learners (speechocean762, Mandarin speakers, expert
@@ -133,9 +136,10 @@ that fades out.
   takes and 3% of the "many mistakes and accent" ones (words alone 44% and 6%): rhythm improves the number more than who
   gets praised. The confidence of two phoneme models on each sound lifts the words alone from 0.72 to 0.76 for accuracy;
   pitch variety and phrase endings add nothing. Rhythm and sounds are not part of the score yet.
-- **Where each word is said** (`blop/align.js`, `blop/replay.js`). The example's words are timed once, offline: the
-  sounds of the line (from the CMU pronouncing dictionary) are forced onto a phoneme model's output, and a word runs
-  from its first sound to its last (the times are in `voice/models/lines.json`; the model is not shipped). A take is
+- **Where each word is said** (`blop/align.js`, `blop/replay.js`). The example's word times are in
+  `voice/models/lines.json`: for the AI-voice lines they are the speech service's own, for the CREMA-D fallback they were
+  found once, offline, by forcing the sounds of the line (from the CMU pronouncing dictionary) onto a phoneme model's
+  output (the model is not shipped); a word runs from its first sound to its last. A take is
   lined up with the example by how the two sound (MFCC frames, dynamic time warping), and the example's word times
   are carried across. The example's speech and the take's begin and end where the engine's speech detector finds them
   (the same detector for both), and the first word starts and the last ends there, so the two lines begin together; the
@@ -204,16 +208,19 @@ that fades out.
   0.2 to 1.4% of takes are cut off. Loudness alone ran on to the cap with noise bursts (median 9 s) and with the
   room 25 dB louder after the speech (median 5.7 s); with the voiced check both end at 1.5 s. Real microphones have
   not been tried here (the preview can't use one).
-- The microphone is asked for inside the tap that starts a round, so it is ready when Blop has finished (a phone
-  only allows it there), and the model starts loading then too.
-- GitHub Pages can't send the headers browsers need for multi-threaded WebAssembly, so the model runs on one
-  thread: about 1.5 s for a sentence on a laptop (1.8 s in the page, with Blop drawing), slower on a phone.
+- The microphone and the audio are started inside the tap that starts a round, so the take can start by itself when
+  Blop has finished, and the model starts loading then too. Our choice: an audio context started outside a tap can stay
+  suspended on phones.
+- The site is served without the two headers that multi-threaded WebAssembly needs (COOP and COEP, which make a page
+  cross-origin isolated; MDN, SharedArrayBuffer), so the model runs on one thread: about 1.5 s for a sentence on a laptop (1.8 s in the page, with Blop drawing), slower on a phone.
   Scoring starts while the user is quiet, so most of that overlaps the wait for the take to end.
 - The practice lines are in `voice/models/lines.json`; each line's example is
   `voice/models/<id>.mp3`. If the file can't be loaded, Blop falls back to a few built-in lines without
-  examples (`PROMPTS` in `Blop.dc.html`); the word check still works on those.
-- The examples are read by an AI voice: 70 lines (5 to 33 words; 28 of them 19 or more) made with xAI's text-to-speech, the voice Liora, in four tones asked for with tags: neutral (plain text), excited (`<loud>`), calm (`<soft><slow>`) and sorry (`<low-pitch>`). Their entries in `lines.json` carry `ai` and `tone`; when any entry has `ai`, Blop plays only those. The page doesn't label them; this file and `voice/models/CREDITS.md` say what they are. Each line is the best of three renders: speech recognition (Whisper base.en) had to hear exactly the words of the line, and the render nearest the median length was kept. The word times in `words` are the speech service's own per-character times folded into words; on other Liora clips (203 words) they were within a median 40 ms of a separate phoneme-model alignment. The pace is the voice's own, not evened out: median 5.2 syllables a second (2.6 to 6.3; the calm lines are the slowest).
-- xAI's Enterprise Terms of Service (last updated 27 October 2026) give the customer the output, forbid using it to train AI models and forbid presenting it as human-generated. Check that they are the terms your account accepted before the clips go on a public site.
+  examples (`PROMPTS` in `Blop.dc.html`). The take still starts by itself, and with no example to compare with, the
+  board waits for the word check.
+- The examples are read by an AI voice: 70 lines (5 to 33 words; 29 of them 19 or more) made with xAI's text-to-speech, the voice Liora, in four tones asked for with tags: neutral (plain text), excited (`<loud>`), calm (`<soft><slow>`) and sorry (`<low-pitch>`). Their entries in `lines.json` carry `ai` and `tone`; when any entry has `ai`, Blop plays only those. The page doesn't label them; this file and `voice/models/CREDITS.md` say what they are. Each line is the best of three renders: speech recognition (Whisper base.en) had to hear exactly the words of the line, and the render nearest the median length was kept. The word times in `words` are the speech service's own per-character times folded into words; on other Liora clips (203 words) they were within a median 40 ms of a separate phoneme-model alignment. The pace is the voice's own, not evened out: median 5.2 syllables a second (2.6 to 6.3; the calm lines are the slowest).
+- The clips are the files the speech service returned, unchanged. xAI's terms for its output are quoted in
+  `voice/models/CREDITS.md`, with links.
 - The 12 CREMA-D readings (real actors, neutral; entries with a `clip` field) are the fallback when no entry has `ai`. To use your own
   recordings, add an entry to `lines.json` and an MP3 with the same id.
 - Credit: CREMA-D (Cao et al., 2014) is under the Open Database License, its recordings under the
@@ -249,8 +256,9 @@ The target ranges are starting points based on prosody research, not yet calibra
 practice takes. Adjust `TONES` in `voice/engine.js` once there are recordings to calibrate against.
 
 The board compares the take with the line's example (`compare`). The word check sets the headline score; if it
-can't run, this comparison sets it. Loudness and pitch range are still part of that score but are not shown
-as bars, since they move with the room and the microphone more than with how clear the speech is:
+can't run yet or at all, this comparison sets it, and the board says "melody and timing" under the number. None of
+its parts is shown as a bar, only the melody lane and the pace line; loudness and pitch range still count in that
+score, though they move with the room and the microphone more than with how clear the speech is:
 
 - **Melody shape** (40%): both melodies are put on the same time scale, each in semitones around
   its speaker's own usual pitch (so a deep voice can copy a high one), lined up with 5% leeway

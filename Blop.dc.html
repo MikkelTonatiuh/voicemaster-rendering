@@ -112,7 +112,7 @@
   </sc-if>
 
   <sc-if value="{{ isRec }}" hint-placeholder-val="{{ false }}">
-    <div role="button" tabindex="0" aria-label="Tap for another line" title="another line" onPointerDown="{{ onSkipPointer }}" style="display: flex; flex-direction: column; align-items: center; max-width: 28rem; cursor: pointer; user-select: none; -webkit-user-select: none">
+    <div role="button" tabindex="0" aria-label="Tap for another line" title="another line" onClick="{{ onSkipTap }}" style="display: flex; flex-direction: column; align-items: center; max-width: 28rem; cursor: pointer; user-select: none; -webkit-user-select: none">
       <span ref="{{ capRef }}" style="margin: 0; max-width: 28rem; text-align: center; font-size: 22px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.35; color: #e8eef4; text-wrap: pretty">{{ caption }}</span>
       <sc-if value="{{ showGuide }}" hint-placeholder-val="{{ false }}">
         <canvas ref="{{ guideRef }}" width="560" height="88" role="img" aria-label="The example's melody" style="width: min(280px, 70vw); height: 44px; margin-top: 14px; display: block"></canvas>
@@ -185,6 +185,7 @@ class Component extends DCLogic {
   raf = 0;
   lastTap = 0;
   lastSkip = 0;
+  endedAt = 0;         /* when the last take ended */
   SKIP_MS = 420;
   simulate = false;
   mods = null;
@@ -248,6 +249,7 @@ class Component extends DCLogic {
     ]);
     this.mods = { line, grade, map, pose, clarity, turn, replay, align };
     window.addEventListener("resize", this.onResize);
+    document.addEventListener("visibilitychange", this.onHidden);
     this.local = local;
     const usable = Array.isArray(lines) ? lines.filter((l) => l && l.id && l.t) : [];
     if (usable.length) this.PROMPTS = usable.some((l) => l.ai) ? usable.filter((l) => l.ai) : usable;
@@ -294,6 +296,7 @@ class Component extends DCLogic {
     if (this.handle) this.handle.stop();
     if (this.clarity) this.clarity.stop();
     window.removeEventListener("resize", this.onResize);
+    document.removeEventListener("visibilitychange", this.onHidden);
     this.rpStop(true);
     clearTimeout(this.listenTimer);
     this.stopExample();
@@ -306,6 +309,23 @@ class Component extends DCLogic {
   }
 
   onResize = () => { if (this.laneEl) this.paintLane(); };
+
+  /* A hidden tab or a locked phone ends the round: the line stops, a take in progress is dropped and the microphone is
+     let go, so nothing records the room meanwhile. Back on the page Blop is home again, and a tap on it says the line. */
+  onHidden = () => {
+    if (document.hidden && this.state.view === "rec") this.toHome();
+  };
+
+  toHome() {
+    this.reqId += 1;
+    this.gen += 1;
+    this.stopping = false;
+    this.stopExample();
+    this.resetRec();
+    this.simulate = false;
+    this.setState({ results: null, simulated: false });
+    this.go("home");
+  }
   setWords = (el) => { this.wordsEl = el; if (!el) this.wordEls = []; else { this.paintedFor = null; setTimeout(() => this.paintBoard(), 0); } };
   setLane = (el) => {
     this.laneEl = el;
@@ -353,8 +373,9 @@ class Component extends DCLogic {
     this.setState({ recording: false, thinking: false });
   }
 
-  /* The mic is asked for inside the tap that starts a round (a phone only allows it there), so it is ready when
-     Blop has finished the line and the take can start by itself. */
+  /* The mic and the audio context are started inside the tap that starts a round. Our choice: an audio context
+     started outside a tap can stay suspended on phones, and asking for the mic now means it is ready when Blop has
+     finished the line, so the take can start by itself. */
   warmMic() {
     if (this.simulate || this.stream || this.micP) return;
     try {
@@ -423,8 +444,19 @@ class Component extends DCLogic {
         this.turn = null;
       }
     }
-    if (el >= this.DUR) { this.stopRecording(); return; }
+    /* the time limit counts from the first speech, so a slow start doesn't eat into a long line */
+    const spoke = this.turn ? this.turn.state().t0 : null;
+    if (el - (spoke === null ? 0 : spoke) >= this.DUR) { this.stopRecording(); return; }
     this.raf = requestAnimationFrame(() => this.loop());
+  }
+
+  /* Whisper hears at most 30 s. A take longer than that is cut to start just before the first speech (turn.js knows
+     when that was), which makes room for 30 s of speaking. Shorter takes are scored as they are. */
+  forWords(pcm, sr, from) {
+    if (!pcm || pcm.length <= sr * 29.5 || !(from > 0)) return pcm;
+    /* only what doesn't fit is cut, and never past 0.3 s before the first speech */
+    const start = Math.max(0, Math.min(from - 0.3, pcm.length / sr - 29.5));
+    return pcm.subarray(Math.floor(start * sr));
   }
 
   async startRecording() {
@@ -435,9 +467,12 @@ class Component extends DCLogic {
     this.chunks = [];
     if (!this.simulate) {
       try {
-        const stream = await (this.micP || navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: false } }));
-        this.micP = null;
-        if (gen !== this.gen) { stream.getTracks().forEach((t) => t.stop()); this.arming = false; return; }
+        /* the warm mic from the tap. If the line changes while this waits, the new round has its own warm mic and
+           owns `arming`: this take lets go of its own stream and leaves the rest alone. */
+        const asked = this.micP || navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: false } });
+        const stream = await asked;
+        if (this.micP === asked) this.micP = null;
+        if (gen !== this.gen) { stream.getTracks().forEach((t) => t.stop()); return; }
         this.stream = stream;
         const AC = window.AudioContext || window.webkitAudioContext;
         if (!this.actx) this.actx = new AC();
@@ -454,9 +489,10 @@ class Component extends DCLogic {
         this.fbuf = new Float32Array(2048);
         source.connect(this.an2);
         const tap = await window.VoiceEngine.capture(this.actx, source, (c) => { this.chunks.push(c); });
-        if (gen !== this.gen) { tap.stop(); this.stopHardware(); this.arming = false; return; }
+        if (gen !== this.gen) { tap.stop(); stream.getTracks().forEach((t) => t.stop()); return; }
         this.tap = tap;
       } catch {
+        if (gen !== this.gen) return;
         this.arming = false;
         this.stopHardware();
         this.setState({ errorCopy: "The microphone is blocked." });
@@ -529,7 +565,8 @@ class Component extends DCLogic {
       const VE = window.VoiceEngine;
       const job = { id: 0, k };
       live.run = job;
-      const run = c.score(this.local.wordAudio(VE, VE.join(this.chunks), this.actx.sampleRate), words.slice(0, k).join(" "), { heard: false });
+      const sr = this.actx.sampleRate;
+      const run = c.score(this.local.wordAudio(VE, this.forWords(VE.join(this.chunks), sr, st.t0), sr), words.slice(0, k).join(" "), { heard: false });
       job.id = run.id;
       run.then(
         (res) => {
@@ -564,7 +601,7 @@ class Component extends DCLogic {
     const job = { at, result: null, run: null };
     this.spec = job;
     try {
-      job.run = c.score(this.local.wordAudio(VE, pcm, sr), text, { heard: false });
+      job.run = c.score(this.local.wordAudio(VE, this.forWords(pcm, sr, turn.state().t0), sr), text, { heard: false });
     } catch (err) {
       console.warn("blop: the word check couldn't score the take so far", err);
       this.spec = null;
@@ -583,8 +620,9 @@ class Component extends DCLogic {
   }
 
   /* the word scores for a take, or null when the word check isn't available (offline, or the model didn't load).
-     spec is the scoring done while the learner was quiet, when nothing was said after it. */
-  async measureClarity(pcm, sr, text, reqId, spec) {
+     spec is the scoring done while the learner was quiet, when nothing was said after it; from is when the speech
+     began (see forWords). */
+  async measureClarity(pcm, sr, text, reqId, spec, from) {
     if (!text) return null;
     /* a stalled download shouldn't keep the user waiting: after 90 s the board shows the comparison alone */
     const ready = await Promise.race([this.prepareClarity(), new Promise((res) => setTimeout(() => res(false), 90000))]);
@@ -595,11 +633,11 @@ class Component extends DCLogic {
         const res = spec.result || await Promise.race([spec.run, new Promise((res2) => setTimeout(() => res2(null), 45000))]);
         if (res && res.words) {
           this.scoreId = res.id;
-          this.clarity.hear(res.id, this.local.wordAudio(VE, pcm, sr));
+          this.clarity.hear(res.id, this.local.wordAudio(VE, this.forWords(pcm, sr, from), sr));
           return res;
         }
       }
-      const audio = this.local.wordAudio(VE, pcm, sr);
+      const audio = this.local.wordAudio(VE, this.forWords(pcm, sr, from), sr);
       const res = await Promise.race([
         this.clarity.score(audio, text),
         new Promise((_, no) => setTimeout(() => no(new Error("the word check took too long")), 45000)),
@@ -626,21 +664,25 @@ class Component extends DCLogic {
     if (this.raf) cancelAnimationFrame(this.raf);
     const pcm = this.actx && this.chunks.length ? window.VoiceEngine.join(this.chunks) : null;
     const sr = this.actx ? this.actx.sampleRate : 0;
-    const tl = this.turn ? this.turn.state().tl : null;
+    const st = this.turn ? this.turn.state() : null;
+    const tl = st ? st.tl : null;
     const spec = this.spec && tl !== null && this.spec.at === tl ? this.spec : null;
     if (this.live.run && this.live.run.id && this.clarity) this.clarity.cancel(this.live.run.id);
+    this.endedAt = performance.now();
     this.stopHardware();
-    this.finishTake(pcm, sr, spec);
+    this.finishTake(pcm, sr, spec, st ? st.t0 : null);
   }
 
   showResult(data, simulated) {
     const drive = this.mods.map.fromAnalyzer(data);
+    /* a tap queued behind the work that brought the board up still counts as late (see onBlop) */
+    this.endedAt = Math.max(this.endedAt, performance.now());
     this.setState({ results: data, simulated });
     this.stopping = false;
     this.go(drive.mixed ? "unsure" : "good");
   }
 
-  async finishTake(pcm, sr, spec) {
+  async finishTake(pcm, sr, spec, from) {
     if (this.simulate) {
       const reqId = ++this.reqId;
       this.go("load");
@@ -669,9 +711,11 @@ class Component extends DCLogic {
         took = take;
         heardEx = example;
         /* With the word model ready, its scoring is part of the result. If it is still downloading (the first
-           visit, about 40 MB), the board comes up at once with the comparison and the words follow. */
-        const ready = this.clarityOn || !!spec;
-        const clarity = ready ? await this.measureClarity(pcm, sr, this.state.prompt.t, reqId, spec) : null;
+           visit, about 40 MB), the board comes up at once with the comparison and the words follow. A line with no
+           example has nothing to compare with, so its board waits for the words. */
+        const canCompare = !!(example && example.analysis && example.analysis.ok);
+        const ready = this.clarityOn || !!spec || !canCompare;
+        const clarity = ready ? await this.measureClarity(pcm, sr, this.state.prompt.t, reqId, spec, from) : null;
         if (reqId !== this.reqId) return;
         data = this.local.toPayload(VE, take, example && example.analysis, clarity);
         if (clarity && this.said[clarity.id]) data.heard = this.said[clarity.id];
@@ -694,12 +738,12 @@ class Component extends DCLogic {
     this.setState({ tries: { ...this.state.tries, [id]: (this.state.tries[id] || 0) + 1 } });
     try { this.replay = took && took.ok ? this.buildReplay(took, pcm, sr, heardEx) : null; } catch (err) { console.warn("blop: couldn't build the replay", err); this.replay = null; }
     this.showResult(data, false);
-    if (later) this.addWords(pcm, sr, later.take, later.example, reqId);
+    if (later) this.addWords(pcm, sr, later.take, later.example, reqId, from);
   }
 
   /* the first visit: the board is up and the model is still arriving; when it has, the words are added */
-  async addWords(pcm, sr, take, example, reqId) {
-    const clarity = await this.measureClarity(pcm, sr, this.state.prompt.t, reqId, null);
+  async addWords(pcm, sr, take, example, reqId, from) {
+    const clarity = await this.measureClarity(pcm, sr, this.state.prompt.t, reqId, null, from);
     if (reqId !== this.reqId) return;
     const r = this.state.results;
     if (!r || !r.pending) return;
@@ -744,7 +788,8 @@ class Component extends DCLogic {
   sayExample(line) {
     line = line || this.state.prompt;
     const url = this.local && this.local.exampleUrl(line);
-    if (!url) return;
+    /* a line without an example (the built-in ones): the take starts by itself all the same */
+    if (!url) { this.listenSoon(); return; }
     this.stopExample();
     const audio = new Audio(url);
     this.exampleAudio = audio;
@@ -1071,7 +1116,13 @@ class Component extends DCLogic {
   onBlop() {
     if (this.handle) this.handle.kick();
     const view = this.state.view;
-    if (view === "home") { this.markMet(); this.warmMic(); this.prepareClarity(); this.go("rec"); this.sayExample(this.state.prompt); return; }
+    if (view === "home") {
+      if (!this.local) return;   /* the page is still loading */
+      this.markMet(); this.warmMic(); this.prepareClarity(); this.go("rec"); this.sayExample(this.state.prompt);
+      return;
+    }
+    /* the take is being measured: a tap just after it ended was meant to end it; a later one tries again */
+    if (view === "load" && performance.now() - this.endedAt < 800) return;
     if (view === "rec") {
       if (this.stopping) return;
       if (this.state.speaking) this.stopExample();
@@ -1094,7 +1145,9 @@ class Component extends DCLogic {
       this.enterSimulate();
       return;
     }
-    /* on the board: a tap on Blop tries the same line again, as the button does */
+    /* on the board: a tap on Blop tries the same line again, as the button does. Not right after a take that ended by
+       itself, though: that tap was meant to end it. */
+    if (performance.now() - this.endedAt < 800) return;
     this.retry();
   }
 
@@ -1157,26 +1210,18 @@ class Component extends DCLogic {
       laneRef: this.setLane,
       scoreRef: this.setScore,
       lineText: s.prompt.t || "",
-      scoreNote: words ? (s.results.wordsNote || "") : "",
+      /* without the word check (still on its way on a first visit, or unavailable) the number is the melody and timing comparison */
+      scoreNote: words ? (s.results.wordsNote || "") : board && s.results && !s.simulated ? (s.results.pending ? "melody and timing so far" : "melody and timing") : "",
       hasSub: sub !== "",
       sub,
       caption,
       hasHeard: !!(words && s.results.heard && words.some((x) => x.level !== "ok")),
       heardCopy: words && s.results.heard ? s.results.heard.toLowerCase() : "",
       boardCopy: drive ? drive.copy : "",
-      aria: s.view === "home" ? "Start" : s.view === "rec" ? (s.recording ? "Stop recording" : "Start recording. Double tap for another prompt.") : "Try again",
+      aria: s.view === "home" ? "Start" : s.view === "rec" ? (s.recording ? "Stop recording" : "Start recording. Double tap for another prompt.") : s.view === "load" ? "Checking your take. Tap to try again" : "Try again",
       onBlop: () => this.onBlop(),
-      goHome: () => {
-        this.reqId += 1;
-        this.gen += 1;
-        this.stopping = false;
-        this.stopExample();
-        this.resetRec();
-        this.simulate = false;
-        this.setState({ results: null, simulated: false });
-        this.go("home");
-      },
-      onSkipPointer: () => {
+      goHome: () => this.toHome(),
+      onSkipTap: () => {
         /* one tap on the sentence gives another line, whatever Blop or the mic is doing; a double tap is one change */
         if (this.state.view !== "rec" || this.stopping) return;
         if (performance.now() - this.lastSkip < 2 * this.SKIP_MS) return;

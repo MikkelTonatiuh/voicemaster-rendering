@@ -158,7 +158,7 @@ export function exampleSpans(anchors, from, to) {
    16 kHz samples and its analysis (voice/engine.js). Returns [{ w, from, to }] in seconds of the take's recording.
    On 160 adult learners' takes against a synthetic voice this had the right word lit for 78% of the speech, with
    boundaries a median 30 ms off the forced alignment of the take (90th percentile 250 ms); with other actors'
-   neutral readings, 85%. */
+   neutral readings, 86%. */
 export function takeSpans(words, ex, take) {
   const spans = exampleSpans(ex.anchors, ex.run && ex.run.from, ex.run && ex.run.to);
   const exF = ex.feat || features(ex.pcm, Math.max(0, spans[0][0] - 0.05), spans[spans.length - 1][1] + 0.05);

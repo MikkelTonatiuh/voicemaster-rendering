@@ -5,7 +5,7 @@
         { type: "hear", id, pcm }                  { type: "heard", id, text }
         { type: "cancel", id }                     a score that has not started is dropped (it answers with no words)
    Jobs run one at a time, in the order they came. Errors come back as { type: "error", id?, message }. */
-import { MODEL, wordScores } from "./clarity.js";
+import { MODEL, downloadMeter, wordScores } from "./clarity.js";
 
 let asr = null, proc = null, Tensor = null;
 let queue = Promise.resolve();
@@ -30,15 +30,10 @@ async function init({ lib, local }) {
     env.remotePathTemplate = "models/{model}/";
     env.backends.onnx.wasm.wasmPaths = local + "ort/";
   }
-  const files = new Map();
-  let shown = 0;
+  const meter = downloadMeter();
   const progress = (p) => {
-    if (p.status !== "progress" || !p.total) return;
-    files.set(p.file, [p.loaded, p.total]);
-    let loaded = 0, total = 0;
-    for (const [l, t] of files.values()) { loaded += l; total += t; }
-    shown = Math.max(shown, Math.min(99, Math.round((100 * loaded) / total)));
-    self.postMessage({ type: "progress", pct: shown });
+    const pct = meter(p);
+    if (pct !== null) self.postMessage({ type: "progress", pct });
   };
   asr = await pipeline("automatic-speech-recognition", MODEL, { dtype: "q8", device: "wasm", progress_callback: progress });
   proc = await AutoProcessor.from_pretrained(MODEL);

@@ -2,7 +2,7 @@
    Run with:  node --test tests/clarity.test.mjs */
 import test from "node:test";
 import assert from "node:assert";
-import { CUTS, LIVE, PRAISE, TAIL, clarityNote, clarityTips, creditOf, levelOf, summarize, tailHeard, wordScores, wordsReached } from "../blop/clarity.js";
+import { CUTS, LIVE, PRAISE, TAIL, clarityNote, clarityTips, creditOf, downloadMeter, levelOf, summarize, tailHeard, wordScores, wordsReached } from "../blop/clarity.js";
 
 /* the word pieces the model's tokenizer gives for " Could I have a window seat, please?" */
 const TOKENS = ["ĠCould", "ĠI", "Ġhave", "Ġa", "Ġwindow", "Ġseat", ",", "Ġplease", "?"];
@@ -91,6 +91,28 @@ test("a finished take has to score well as well as have no hard word to please B
   assert.strictEqual(summarize(level([["Don't", -0.1], ["forget", -0.2], ["a", -0.1], ["jacket.", -0.3]]), PRAISE).band, "good");
   /* and the cut-off for a poor read is not moved */
   assert.strictEqual(summarize(level([["How", -8], ["much", -9], ["does", -9], ["this", -7], ["cost?", -9]]), PRAISE).band, "bad");
+});
+
+test("the first-visit download share follows the library's total and doesn't jump to 99 on a small first file", () => {
+  const m = downloadMeter();
+  /* the config file comes first, on its own, and is done at once */
+  assert.strictEqual(m({ status: "progress", file: "config.json", loaded: 2202, total: 2202 }), null);
+  /* the library's total holds every file's size before the weights start */
+  assert.strictEqual(m({ status: "progress_total", progress: 0.005, loaded: 2202, total: 43e6 }), null, "nothing new to show at 0%");
+  assert.strictEqual(m({ status: "progress_total", progress: 12.4, loaded: 5.3e6, total: 43e6 }), 12);
+  assert.strictEqual(m({ status: "progress_total", progress: 11, loaded: 4.7e6, total: 43e6 }), null, "it never goes back");
+  assert.strictEqual(m({ status: "progress", file: "onnx/decoder_model_merged_quantized.onnx", loaded: 30e6, total: 30e6 }), null, "per-file events are ignored once the total is known");
+  assert.strictEqual(m({ status: "progress_total", progress: 100, loaded: 43e6, total: 43e6 }), 99, "99 at most: ready says the rest");
+});
+
+test("without the library's total, the files are added up only once the weights have started", () => {
+  const m = downloadMeter();
+  assert.strictEqual(m({ status: "progress", file: "config.json", loaded: 2202, total: 2202 }), null);
+  assert.strictEqual(m({ status: "progress", file: "tokenizer.json", loaded: 2e6, total: 2e6 }), null);
+  assert.strictEqual(m({ status: "progress_total", progress: 100, loaded: 2202, total: 2202 }), null, "a total without the weights' sizes is not trusted");
+  assert.strictEqual(m({ status: "progress", file: "onnx/encoder_model_quantized.onnx", loaded: 1e6, total: 10e6 }), 25);
+  assert.strictEqual(m({ status: "progress", file: "onnx/encoder_model_quantized.onnx", loaded: 6e6, total: 10e6 }), 67);
+  assert.strictEqual(m(null), null);
 });
 
 const scored = (list) => list.map((s, i) => ({ w: "w" + i, s }));

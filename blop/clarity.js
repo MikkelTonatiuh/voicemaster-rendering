@@ -120,6 +120,33 @@ export function wordsReached(anchors, spoken, cfg = LIVE) {
   return k;
 }
 
+/* How much of the word model has arrived, for the first visit's "first time only · NN%". The library adds up every
+   file it needs in its "progress_total" events, with the sizes it asked for before downloading. If it could not get
+   those sizes, the files that have reported are added up instead, but only once the model's weights are among them:
+   the small files come first and would read as nearly done. Returns a function that takes each progress event and
+   gives the percentage to show (0 to 99, never going back), or null when there is nothing new to show. */
+export function downloadMeter() {
+  const files = new Map();
+  let shown = 0, whole = false;
+  return (p) => {
+    let pct = null;
+    if (p && p.status === "progress_total" && p.total > 5e6) { whole = true; pct = p.progress; }
+    else if (p && !whole && p.status === "progress" && p.total > 0) {
+      files.set(p.file, [p.loaded, p.total]);
+      if ([...files.keys()].some((f) => /\.onnx$/.test(String(f)))) {
+        let loaded = 0, total = 0;
+        for (const [l, t] of files.values()) { loaded += l; total += t; }
+        pct = (100 * loaded) / total;
+      }
+    }
+    if (pct === null || !Number.isFinite(pct)) return null;
+    pct = Math.min(99, Math.round(pct));
+    if (pct <= shown) return null;
+    shown = pct;
+    return shown;
+  };
+}
+
 function assets() {
   /* a test page on this machine may point at a copy of the model and runtime on another local port */
   const here = typeof location !== "undefined" ? location : null;
