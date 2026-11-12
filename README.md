@@ -50,7 +50,8 @@ then open http://localhost:8000
 - `cv/say/` — what Blop on the CV says when the mouse rests on something: one recording per line of `MUTTER` in
   `index.html`, named by a hash of the line, in the voice Blop has in the app. It only talks after the visitor has
   clicked or typed on the page (Chrome's autoplay policy, quoted in `index.html`) and while it is on screen, and the
-  Mute button in the top bar turns it off
+  Mute button in the top bar turns it off. The voice is switched off for now (`VOICE` in `index.html`); the lines
+  still show as text
 - `thesis/` — the thesis explained: its pages beside an interactive figure for each method and
   result (the thesis title on the CV opens it; the PDF stays one click away)
 - `.nojekyll` — stops GitHub Pages filtering files

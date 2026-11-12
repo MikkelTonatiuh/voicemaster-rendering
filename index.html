@@ -192,7 +192,7 @@
       </span>
       <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--warm-text); white-space: nowrap">{{ openLabel }}</span>
     </div>
-    <button type="button" class="snd" onClick="{{ toggleSound }}" aria-label="{{ soundAria }}" data-mutter="{{ soundMutter }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: var(--ink-3)">{{ soundLabel }}</button>
+    <button type="button" class="snd" hidden="{{ sndHidden }}" onClick="{{ toggleSound }}" aria-label="{{ soundAria }}" data-mutter="{{ soundMutter }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: var(--ink-3)">{{ soundLabel }}</button>
     <button type="button" data-mutter="theme" onClick="{{ toggleTheme }}" aria-label="{{ themeAria }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: var(--ink-3)">{{ themeLabel }}</button>
     <div data-mutter="lang" style="display: flex; gap: 14px">
     <button type="button" onClick="{{ setEn }}" style="border: 0; background: none; font: inherit; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; padding: 2px; color: {{ enOn }}">en</button>
@@ -572,7 +572,7 @@ class Component extends DCLogic {
   lastBy = {};         /* each spot's last line, so going back to it brings another */
 
   pickLine(id, how) {
-    if (id === "vm" && how === "mouse" && this.state.sound && !this.awake()) return this.WAKE;
+    if (id === "vm" && how === "mouse" && this.VOICE && this.state.sound && !this.awake()) return this.WAKE;
     const pool = this.MUTTER[id] || [];
     if (!pool.length) return "";
     const choices = pool.length > 1 ? pool.filter((l) => l !== this.lastBy[id]) : pool;
@@ -589,6 +589,7 @@ class Component extends DCLogic {
      Blop only shows its lines. Our choices: every line goes through that one audio context, so a later line needs no
      click of its own; Blop talks only for a mouse resting on something, not for a finger scrolling past, and only
      while it is on screen itself, so the voice never comes from nowhere; the sound button in the top bar turns it off. */
+  VOICE = false;       /* off for now (12 Nov 2026: the delivery needs more work); true brings back the voice, the hint and the button */
   woke = false;
   seen = false;        /* Blop is on screen */
   watch = null;
@@ -614,6 +615,7 @@ class Component extends DCLogic {
   }
 
   wake = (e) => {
+    if (!this.VOICE) return;
     if (e && e.type === "keydown" && ["Escape", "Shift", "Control", "Alt", "Meta"].includes(e.key)) return;
     this.woke = true;
     try {
@@ -633,7 +635,7 @@ class Component extends DCLogic {
      the page stays quiet */
   queueSay(line, how) {
     clearTimeout(this.sayTimer);
-    if (!line || line === this.WAKE || how !== "mouse" || !this.state.sound || !this.seen) return;
+    if (!this.VOICE || !line || line === this.WAKE || how !== "mouse" || !this.state.sound || !this.seen) return;
     if (!this.sayCtx && this.awake()) this.wake();   /* the page was clicked before Blop was listening for it */
     if (!this.sayCtx) return;
     const row = this.row;
@@ -825,6 +827,7 @@ class Component extends DCLogic {
       openLabel: copy.openLabel,
       themeLabel: this.state.theme === "light" ? copy.themeLight : copy.themeDark,
       themeAria: this.state.theme === "light" ? "Switch to dark mode" : "Switch to light mode",
+      sndHidden: !this.VOICE,
       soundLabel: this.state.sound ? copy.muteLabel : copy.unmuteLabel,
       soundAria: this.state.sound ? copy.muteAria : copy.unmuteAria,
       soundMutter: this.state.sound ? "mute" : "unmute",
