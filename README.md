@@ -47,6 +47,10 @@ then open http://localhost:8000
 - `tests/` — tests for the engine, for the word check, for when a take ends, for how Blop uses them, and for how the name is written
   (`tests/fixtures/` holds the name as the page measured it at four window widths)
 - `cv/thesis.pdf` — the bachelor thesis
+- `cv/say/` — what Blop on the CV says when the mouse rests on something: one recording per line of `MUTTER` in
+  `index.html`, named by a hash of the line, in the voice Blop has in the app. It only talks after the visitor has
+  clicked or typed on the page (Chrome's autoplay policy, quoted in `index.html`) and while it is on screen, and the
+  Mute button in the top bar turns it off
 - `thesis/` — the thesis explained: its pages beside an interactive figure for each method and
   result (the thesis title on the CV opens it; the PDF stays one click away)
 - `.nojekyll` — stops GitHub Pages filtering files
